@@ -14,6 +14,7 @@ import '../services/conversation_service.dart';
 import '../models/booking_model.dart';
 import '../models/chat_conversation.dart';
 import '../constants/theme.dart';
+import '../utils/booking_photo_url.dart';
 import '../widgets/full_screen_image_viewer.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -705,16 +706,7 @@ class _ChatScreenState extends State<ChatScreen>
   }
 
   Widget _buildBookingPhotoItem(Booking booking, String photoUrl) {
-      final baseUrl = ConversationService.baseImageUrl;
-    // Ensure proper URL construction for uploaded images
-    String fullPhotoUrl;
-    if (photoUrl.startsWith('http')) {
-      fullPhotoUrl = photoUrl;
-    } else if (photoUrl.startsWith('/uploads/')) {
-      fullPhotoUrl = '$baseUrl$photoUrl';
-    } else {
-      fullPhotoUrl = '$baseUrl/uploads/$photoUrl';
-    }
+    final fullPhotoUrl = bookingPhotoUrl(photoUrl);
     
     
     return Container(

@@ -10,6 +10,7 @@ import '../services/navigation_service.dart';
 import '../services/conversation_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
+import '../utils/booking_photo_url.dart';
 import './multi_criteria_rating_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
@@ -724,10 +725,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             separatorBuilder: (_, __) =>
                                 const SizedBox(width: 12),
                             itemBuilder: (context, index) {
-                              final path = _booking!.photos![index];
-                              final imageUrl = path.startsWith('http')
-                                  ? path
-                                  : '${ConversationService.baseImageUrl}${path.startsWith('/') ? path : '/$path'}';
+                              final imageUrl = bookingPhotoUrl(_booking!.photos![index]);
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
                                 child: Image.network(

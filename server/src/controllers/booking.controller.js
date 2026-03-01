@@ -25,12 +25,14 @@ const BookingController = {
                 return res.status(404).json({ message: 'Provider not found or not available for booking.' });
             }
 
-            // Process uploaded photos
+            // Process uploaded photos: store full URLs in DB so images load from server (no in-memory reliance)
             const photoUrls = [];
             if (uploadedFiles && uploadedFiles.length > 0) {
+                let baseUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+                baseUrl = (baseUrl || '').replace(/\/$/, '');
+                if (!/^https?:\/\//i.test(baseUrl)) baseUrl = `https://${baseUrl}`;
                 uploadedFiles.forEach(file => {
-                    // Create relative URL path for the uploaded file
-                    const photoUrl = `/uploads/${file.filename}`;
+                    const photoUrl = `${baseUrl}/uploads/${file.filename}`;
                     photoUrls.push(photoUrl);
                 });
             }
