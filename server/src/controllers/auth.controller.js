@@ -493,11 +493,10 @@ const AuthController = {
             // Build response first so we have a normalized user object
             const userForResponse = user && user.toObject ? user : user;
             const userResponse = getUserResponse(userForResponse);
-            let userId = idToString(user._id || user.id);
-            if (!userId && userResponse && userResponse._id) {
-                userId = typeof userResponse._id === 'string' ? userResponse._id : idToString(userResponse._id);
-            }
-            if (!userId) {
+            // Get userId from DB by email so we never depend on in-memory object shape (fixes 500 on Railway)
+            const doc = await User.findOne({ email: email.toLowerCase() }).select('_id').lean();
+            let userId = doc && doc._id != null ? (idToString(doc._id) || String(doc._id)) : null;
+            if (!userId || userId === '[object Object]') {
                 return res.status(500).json({ message: 'Unable to create session. Please try again.' });
             }
             const token = generateToken({ id: userId, type: 'user' });
