@@ -416,7 +416,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(
+        Navigator.of(context, rootNavigator: false).pushNamed(
           BookingDetailScreen.routeName,
           arguments: b.id,
         );
@@ -698,7 +698,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(
+        Navigator.of(context, rootNavigator: false).pushNamed(
           BookingDetailScreen.routeName,
           arguments: booking.id,
         );

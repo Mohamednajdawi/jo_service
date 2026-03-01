@@ -966,7 +966,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
   }
 
   void _navigateToBookingDetail(Booking booking) {
-    Navigator.of(context).push(
+    Navigator.of(context, rootNavigator: false).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             BookingDetailScreen(bookingId: booking.id),

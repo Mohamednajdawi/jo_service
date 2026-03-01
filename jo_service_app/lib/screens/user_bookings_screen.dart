@@ -405,7 +405,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
       ),
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(
+          Navigator.of(context, rootNavigator: false).pushNamed(
             BookingDetailScreen.routeName,
             arguments: booking.id,
           );

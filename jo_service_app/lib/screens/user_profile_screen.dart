@@ -17,18 +17,14 @@ import './notification_settings_screen.dart';
 import '../constants/theme.dart';
 import 'dart:ui';
 
-/// Builds a URL that the app can load for a profile image. Handles stored URLs
-/// that are missing the protocol (e.g. "host.com/uploads/...") or are full URLs.
+/// Builds a URL that the app can load for a profile image. Handles our server
+/// URLs, external URLs (e.g. Google), and values missing the protocol.
 String? _profileImageUrl(String? url) {
   if (url == null || url.isEmpty) return null;
   final base = ApiConfig.productionBaseUrl;
   if (url.startsWith(base)) return url;
-  if (url.startsWith('http')) {
-    try {
-      final uri = Uri.parse(url);
-      if (uri.path.isNotEmpty) return '$base${uri.path}';
-    } catch (_) {}
-  }
+  // External full URL (e.g. Google profile photo) – use as-is
+  if (url.startsWith('http')) return url;
   // Stored value may be host + path without protocol (e.g. "host.com/uploads/...")
   if (!url.startsWith('/')) return 'https://$url';
   return '$base$url';
