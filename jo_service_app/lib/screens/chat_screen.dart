@@ -584,9 +584,7 @@ class _ChatScreenState extends State<ChatScreen>
               itemCount: conversation.bookingPhotos.length,
               itemBuilder: (context, index) {
                 final photoUrl = conversation.bookingPhotos[index];
-                final fullUrl = photoUrl.startsWith('http') 
-                    ? photoUrl 
-                    : '${ConversationService.baseImageUrl}${photoUrl.startsWith('/') ? photoUrl : '/$photoUrl'}';
+                final fullUrl = bookingPhotoUrl(photoUrl);
                 
 
                 return Padding(
@@ -1093,15 +1091,9 @@ class _ChatScreenState extends State<ChatScreen>
     }
   }
   
-  // Helper method to construct full image URL
+  // Helper method to construct full image URL (same logic as bookingPhotoUrl for consistency)
   String _getFullImageUrl(String imageUrl) {
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    } else if (imageUrl.startsWith('/')) {
-      return '${ConversationService.baseImageUrl}$imageUrl';
-    } else {
-      return '${ConversationService.baseImageUrl}/$imageUrl';
-    }
+    return bookingPhotoUrl(imageUrl);
   }
 
   // Open image in full-screen viewer

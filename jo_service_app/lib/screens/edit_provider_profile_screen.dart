@@ -11,6 +11,7 @@ import '../services/conversation_service.dart';
 import '../constants/theme.dart';
 import '../models/provider_model.dart';
 import '../widgets/location_picker.dart';
+import 'user_login_screen.dart';
 
 class EditProviderProfileScreen extends StatefulWidget {
   const EditProviderProfileScreen({super.key});
@@ -1159,6 +1160,48 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                               ),
                               
                               const SizedBox(height: 40),
+                              // Manage account - Delete account (only here, not on dashboard)
+                              Text(
+                                AppLocalizations.of(context)!.manageAccount,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : AppTheme.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _showDeleteAccountDialog,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.danger.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppTheme.danger, width: 1),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.delete_forever_rounded, color: AppTheme.danger, size: 20),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          AppLocalizations.of(context)!.deleteAccount,
+                                          style: const TextStyle(
+                                            color: AppTheme.danger,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
                             ],
                           ),
                           ),
@@ -1169,6 +1212,104 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
         ),
       ),
     );
+  }
+
+  void _showDeleteAccountDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final authService = provider_package.Provider.of<AuthService>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            l10n.deleteAccount,
+            style: const TextStyle(fontWeight: FontWeight.w600, color: AppTheme.danger),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.deleteAccountConfirmation, style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.danger.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning, color: AppTheme.danger, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.deleteAccountWarning,
+                        style: const TextStyle(color: AppTheme.danger, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w600)),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _deleteAccount(authService);
+              },
+              child: Text(l10n.delete, style: const TextStyle(color: AppTheme.danger, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteAccount(AuthService authService) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            content: Row(
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(width: 16),
+                Text(l10n.deletingAccount),
+              ],
+            ),
+          ),
+        );
+      }
+      await authService.deleteAccount();
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.accountDeleted), backgroundColor: AppTheme.primary),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const UserLoginScreen()),
+          (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.failedToDeleteAccount}: $e'), backgroundColor: AppTheme.danger),
+        );
+      }
+    }
   }
 
   Widget _buildInputField({

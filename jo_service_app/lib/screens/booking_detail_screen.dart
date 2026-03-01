@@ -11,6 +11,7 @@ import '../services/conversation_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
 import '../utils/booking_photo_url.dart';
+import '../widgets/full_screen_image_viewer.dart';
 import './multi_criteria_rating_screen.dart';
 
 class BookingDetailScreen extends StatefulWidget {
@@ -726,20 +727,29 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                                 const SizedBox(width: 12),
                             itemBuilder: (context, index) {
                               final imageUrl = bookingPhotoUrl(_booking!.photos![index]);
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  imageUrl,
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => FullScreenImageViewer(imageUrl: imageUrl),
+                                    ),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    imageUrl,
                                     width: 120,
                                     height: 120,
-                                    color: Colors.grey[300],
-                                    child: const Icon(
-                                      Icons.broken_image_outlined,
-                                      size: 32,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 120,
+                                      height: 120,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.broken_image_outlined,
+                                        size: 32,
+                                      ),
                                     ),
                                   ),
                                 ),

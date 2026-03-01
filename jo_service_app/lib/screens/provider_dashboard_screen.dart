@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 import '../constants/theme.dart';
+import '../constants/api_config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/theme_service.dart';
@@ -15,6 +15,16 @@ import './provider_bookings_screen.dart';
 import './provider_messages_screen.dart';
 import 'package:provider/provider.dart';
 
+/// Builds a URL that the app can load for a profile image (provider or user).
+String? _profileImageUrl(String? url) {
+  if (url == null || url.isEmpty) return null;
+  final base = ApiConfig.productionBaseUrl;
+  if (url.startsWith(base)) return url;
+  if (url.startsWith('http')) return url;
+  if (!url.startsWith('/')) return 'https://$url';
+  return '$base$url';
+}
+
 class ProviderDashboardScreen extends StatefulWidget {
   static const routeName = '/provider-dashboard';
 
@@ -25,14 +35,7 @@ class ProviderDashboardScreen extends StatefulWidget {
 }
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late AnimationController _scaleController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-
+    with WidgetsBindingObserver {
   // Booking statistics
   int _activeBookings = 0;
   int _completedThisMonth = 0;
@@ -50,7 +53,8 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
   // Auto-refresh indicator
   bool _isAutoRefreshActive = true;
   
-  // Provider availability state
+  // Provider profile and availability
+  model.Provider? _provider;
   bool _isProviderAvailable = true;
   bool _isUpdatingAvailability = false;
   final ApiService _apiService = ApiService();
@@ -59,53 +63,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
   void initState() {
     super.initState();
     
-    // Add lifecycle observer
     WidgetsBinding.instance.addObserver(this);
-    
-    // Initialize animations
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
-
-    // Start animations
-    _fadeController.forward();
-    _slideController.forward();
-    _scaleController.forward();
 
     // Load booking statistics and provider profile
     _loadBookingStatistics();
@@ -118,9 +76,6 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _fadeController.dispose();
-    _slideController.dispose();
-    _scaleController.dispose();
     _refreshTimer?.cancel();
     super.dispose();
   }
@@ -255,6 +210,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
       
       if (mounted) {
         setState(() {
+          _provider = profile;
           _isProviderAvailable = profile.isAvailable ?? true;
         });
       }
@@ -399,434 +355,467 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildProfileHeader(model.Provider? provider) {
     final l10n = AppLocalizations.of(context)!;
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayName = provider != null
+        ? (provider.companyName ?? provider.fullName ?? l10n.profile)
+        : l10n.profile;
+    final email = provider?.email ?? '';
+    final pictureUrl = _profileImageUrl(provider?.profilePictureUrl);
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7),
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: CustomScrollView(
-                slivers: [
-                  // Custom App Bar
-                  SliverAppBar(
-                    expandedHeight: 120,
-                    floating: false,
-                    pinned: true,
-                    backgroundColor: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-                    elevation: 0,
-                    systemOverlayStyle: SystemUiOverlayStyle(
-                      statusBarColor: Colors.transparent,
-                      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                    ),
-                    flexibleSpace: FlexibleSpaceBar(
-                      title: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 300),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                          letterSpacing: -0.5,
-                        ),
-                        child: Text(l10n.dashboard),
-                      ),
-                      background: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: isDark 
-                              ? [const Color(0xFF2C2C2E), const Color(0xFF1C1C1E)]
-                              : [Colors.white, const Color(0xFFF2F2F7)],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.dark.withOpacity(0.06),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: _isProviderAvailable
+                    ? [AppTheme.primary, AppTheme.secondary]
+                    : [AppTheme.grey, AppTheme.greyLight],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primary.withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(3),
+            child: Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
+              padding: const EdgeInsets.all(2),
+              child: ClipOval(
+                child: SizedBox(
+                  width: 90,
+                  height: 90,
+                  child: pictureUrl == null || pictureUrl.isEmpty
+                      ? Icon(
+                          _isProviderAvailable
+                              ? Icons.person_rounded
+                              : Icons.person_off_rounded,
+                          size: 40,
+                          color: AppTheme.grey,
+                        )
+                      : Image.network(
+                          pictureUrl,
+                          key: ValueKey(pictureUrl),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person_rounded,
+                            size: 40,
+                            color: AppTheme.grey,
                           ),
-                        ),
-                      ),
-                    ),
-        actions: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        child: Row(
-                          children: [
-                            // Auto-refresh indicator
-                            if (_isAutoRefreshActive)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                margin: const EdgeInsets.only(right: 8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: TweenAnimationBuilder<double>(
-                                  tween: Tween(begin: 0.5, end: 1.0),
-                                  duration: const Duration(seconds: 2),
-                                  builder: (context, value, child) {
-                                    return Opacity(
-                                      opacity: value,
-                                      child: child,
-                                    );
-                                  },
-                                  onEnd: () {
-                                    if (mounted && _isAutoRefreshActive) {
-                                      setState(() {});
-                                    }
-                                  },
-                                ),
-                              ),
-                            GestureDetector(
-                              onTap: _refreshData,
-                              onLongPress: () {
-                                setState(() {
-                                  _isAutoRefreshActive = !_isAutoRefreshActive;
-                                });
-                                if (_isAutoRefreshActive) {
-                                  _startAutoRefresh();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(l10n.autoRefreshEnabled),
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                } else {
-                                  _stopAutoRefresh();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(l10n.autoRefreshDisabled),
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Icon(
-                                Icons.refresh_rounded,
-                                color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                                size: 24,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.translate,
-                          color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                          size: 24,
-                        ),
-                        onPressed: () async {
-                          final localeService = Provider.of<LocaleService>(context, listen: false);
-                          await localeService.toggleLocale();
-                          // Show a snackbar to confirm language change
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  l10n.languageChanged,
-                                ),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(right: 16),
-                        child: PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                            size: 24,
-                          ),
-                          onSelected: (value) {
-                            if (value == 'logout') {
-                              _showLogoutDialog(context, authService);
-                            } else if (value == 'delete') {
-                              _showDeleteAccountDialog(context, authService);
-                            }
+                          loadingBuilder: (_, child, progress) {
+                            if (progress == null) return child;
+                            return const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2));
                           },
-                          itemBuilder: (BuildContext context) => [
-                            PopupMenuItem<String>(
-                              value: 'logout',
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.logout_rounded, size: 20),
-                                  const SizedBox(width: 12),
-                                  Text(l10n.signOut),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.delete_forever_rounded, size: 20, color: AppTheme.danger),
-                                  const SizedBox(width: 12),
-                                  Text(l10n.deleteAccount, style: const TextStyle(color: AppTheme.danger)),
-                                ],
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                    ],
-                  ),
-
-                  // Welcome Section
-                  SliverToBoxAdapter(
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark 
-                              ? Colors.black.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _isProviderAvailable 
-                                      ? [AppTheme.primary, AppTheme.secondary]
-                                      : [const Color(0xFF8E8E93), const Color(0xFF6D6D70)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Icon(
-                                  _isProviderAvailable ? Icons.person_rounded : Icons.person_off_rounded,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      l10n.welcomeBack,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark ? Colors.white70 : const Color(0xFF8E8E93),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _isProviderAvailable ? l10n.readyToServe : l10n.currentlyUnavailable,
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        color: _isProviderAvailable 
-                                          ? (isDark ? Colors.white : const Color(0xFF1D1D1F))
-                                          : (isDark ? Colors.white54 : const Color(0xFF8E8E93)),
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          // Availability Toggle Section
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _isProviderAvailable 
-                                ? AppTheme.primary.withOpacity(0.1)
-                                : const Color(0xFFFF9500).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _isProviderAvailable 
-                                  ? AppTheme.primary.withOpacity(0.3)
-                                  : const Color(0xFFFF9500).withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: _isProviderAvailable 
-                                      ? AppTheme.primary
-                                      : const Color(0xFFFF9500),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    _isProviderAvailable 
-                                      ? Icons.check_circle
-                                      : Icons.pause_circle_filled,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n.availabilityStatus,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        _isProviderAvailable 
-                                          ? l10n.availableForBookings
-                                          : l10n.currentlyUnavailable,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isDark ? Colors.white70 : const Color(0xFF8E8E93),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // Toggle Switch
-                                Transform.scale(
-                                  scale: 0.8,
-                                  child: Switch(
-                                    value: _isProviderAvailable,
-                                    onChanged: _isUpdatingAvailability 
-                                      ? null 
-                                      : (value) => _updateProviderAvailability(value),
-                                    activeColor: AppTheme.primary,
-                                    inactiveThumbColor: const Color(0xFFFF9500),
-                                    inactiveTrackColor: const Color(0xFFFF9500).withOpacity(0.3),
-                                  ),
-                                ),
-                                if (_isUpdatingAvailability)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 8),
-                                    child: SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            displayName,
+            style: AppTheme.h2.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.dark,
+              fontSize: 22,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (email.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.light,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.email_outlined, size: 14, color: AppTheme.grey),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      email,
+                      style: AppTheme.body3.copyWith(color: AppTheme.grey),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                  ),
-
-                  // Quick Stats
-                  SliverToBoxAdapter(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              context,
-                              l10n.pending,
-                                                              l10n.bookings,
-                              Icons.schedule_rounded,
-                              AppTheme.primary,
-                              isDark,
-                              _isLoadingStats ? '...' : _activeBookings.toString(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              context,
-                              l10n.completed,
-                              l10n.completedThisMonth,
-                              Icons.check_circle_rounded,
-                              AppTheme.primary,
-                              isDark,
-                              _isLoadingStats ? '...' : _completedThisMonth.toString(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Action Cards
-                  SliverToBoxAdapter(
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          _buildActionCard(
-                            context,
-                            l10n.manageProfile,
-                                                          l10n.updateServicesRates,
-                            Icons.person_outline_rounded,
-                            AppTheme.primary,
-                            () => _navigateToProfile(context),
-                            isDark,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildActionCard(
-                            context,
-                            l10n.manageBookings,
-                                                          l10n.viewRespondBookings,
-                            Icons.calendar_today_rounded,
-                            AppTheme.primary,
-                            () => _navigateToBookings(context),
-                            isDark,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildActionCard(
-                            context,
-                            l10n.messages,
-                                                          l10n.viewRespondMessages,
-                            Icons.chat_bubble_outline_rounded,
-                            const Color(0xFFFF9500),
-                            () => _navigateToMessages(context),
-                            isDark,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Bottom Spacing
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 40),
                   ),
                 ],
               ),
             ),
+          ],
+          const SizedBox(height: 16),
+          // Availability row (same style as user profile tiles)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: _isProviderAvailable
+                  ? AppTheme.primary.withOpacity(0.08)
+                  : AppTheme.warning.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isProviderAvailable
+                    ? AppTheme.primary.withOpacity(0.2)
+                    : AppTheme.warning.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isProviderAvailable
+                      ? Icons.check_circle_rounded
+                      : Icons.pause_circle_filled,
+                  size: 20,
+                  color: _isProviderAvailable
+                      ? AppTheme.primary
+                      : AppTheme.warning,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l10n.availabilityStatus,
+                        style: AppTheme.body2.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.dark,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        _isProviderAvailable
+                            ? l10n.availableForBookings
+                            : l10n.currentlyUnavailable,
+                        style: AppTheme.body3.copyWith(
+                          color: AppTheme.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_isUpdatingAvailability)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                    ),
+                  )
+                else
+                  Transform.scale(
+                    scale: 0.85,
+                    child: Switch.adaptive(
+                      value: _isProviderAvailable,
+                      onChanged: (value) => _updateProviderAvailability(value),
+                      activeColor: AppTheme.primary,
+                    ),
+                  ),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppleStyleCard({required List<Widget> children}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.dark.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    bool isLast = false,
+    Color? iconColor,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.vertical(
+          top: isLast ? Radius.zero : const Radius.circular(12),
+          bottom: isLast ? const Radius.circular(12) : Radius.zero,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            border: !isLast
+                ? Border(
+                    bottom: BorderSide(
+                      color: AppTheme.greyLight.withOpacity(0.2),
+                      width: 0.5,
+                    ),
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (iconColor ?? AppTheme.primary).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? AppTheme.primary,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTheme.body1.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.dark,
+                        fontSize: 15,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 1),
+                      Text(
+                        subtitle,
+                        style: AppTheme.body3.copyWith(
+                          color: AppTheme.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String title,
+    required VoidCallback onPressed,
+    required Color color,
+    bool isDestructive = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: isDestructive ? color.withOpacity(0.1) : color,
+              borderRadius: BorderRadius.circular(12),
+              border: isDestructive ? Border.all(color: color, width: 1) : null,
+            ),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTheme.body1.copyWith(
+                color: isDestructive ? color : Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    return Scaffold(
+      backgroundColor: AppTheme.light,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Text(
+          l10n.profile,
+          style: AppTheme.h3.copyWith(
+            color: AppTheme.dark,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: AppTheme.dark, size: 22),
+            onPressed: _refreshData,
+          ),
+          IconButton(
+            icon: Icon(Icons.translate, color: AppTheme.dark, size: 22),
+            onPressed: () async {
+              final localeService =
+                  Provider.of<LocaleService>(context, listen: false);
+              await localeService.toggleLocale();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.languageChanged),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: AppTheme.dark, size: 22),
+            onSelected: (value) {
+              if (value == 'logout') {
+                _showLogoutDialog(context, authService);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    const Icon(Icons.logout_rounded, size: 20),
+                    const SizedBox(width: 12),
+                    Text(l10n.signOut),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            _buildProfileHeader(_provider),
+            // Stats row (compact, same card style as user)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      l10n.pending,
+                      l10n.bookings,
+                      Icons.schedule_rounded,
+                      AppTheme.primary,
+                      false,
+                      _isLoadingStats ? '...' : _activeBookings.toString(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      context,
+                      l10n.completed,
+                      l10n.completedThisMonth,
+                      Icons.check_circle_rounded,
+                      AppTheme.primary,
+                      false,
+                      _isLoadingStats ? '...' : _completedThisMonth.toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildAppleStyleCard(
+              children: [
+                _buildSettingsTile(
+                  icon: Icons.person_outline_rounded,
+                  title: l10n.manageProfile,
+                  subtitle: l10n.updateServicesRates,
+                  trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.grey),
+                  onTap: () => _navigateToProfile(context),
+                ),
+                _buildSettingsTile(
+                  icon: Icons.calendar_today_rounded,
+                  title: l10n.manageBookings,
+                  subtitle: l10n.viewRespondBookings,
+                  trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.grey),
+                  onTap: () => _navigateToBookings(context),
+                ),
+                _buildSettingsTile(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: l10n.messages,
+                  subtitle: l10n.viewRespondMessages,
+                  trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.grey),
+                  onTap: () => _navigateToMessages(context),
+                  isLast: true,
+                  iconColor: AppTheme.warning,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildActionButton(
+              title: l10n.logout,
+              onPressed: () => _showLogoutDialog(context, authService),
+              color: AppTheme.warning,
+              isDestructive: true,
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
@@ -844,19 +833,17 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+        color: isDark ? const Color(0xFF2C2C2E) : AppTheme.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: isDark 
-              ? Colors.black.withOpacity(0.2)
-              : Colors.black.withOpacity(0.05),
+            color: AppTheme.dark.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
         ],
       ),
-        child: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -866,11 +853,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 12),
           Text(
@@ -878,7 +861,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : const Color(0xFF1D1D1F),
+              color: isDark ? Colors.white : AppTheme.dark,
             ),
           ),
           const SizedBox(height: 4),
@@ -887,101 +870,17 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white70 : const Color(0xFF1D1D1F),
+              color: isDark ? Colors.white70 : AppTheme.dark,
             ),
           ),
           Text(
             subtitle,
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? Colors.white54 : const Color(0xFF8E8E93),
+              color: isDark ? Colors.white54 : AppTheme.grey,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard(
-    BuildContext context,
-    String title,
-    String subtitle,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-    bool isDark,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isDark 
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.05),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF1D1D1F),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.white54 : const Color(0xFF8E8E93),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: isDark ? Colors.white54 : const Color(0xFF8E8E93),
-                size: 24,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
