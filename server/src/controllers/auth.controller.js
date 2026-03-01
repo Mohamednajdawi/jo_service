@@ -4,21 +4,39 @@ const { generateToken } = require('../utils/jwt.utils');
 const VerificationService = require('../services/verification.service');
 const OAuthService = require('../services/oauth.service');
 
+// Normalize MongoDB extended JSON date format { $date: "..." } so plain objects are safe for responses
+function normalizeExtendedJsonDates(obj) {
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === 'object' && obj !== null && '$date' in obj) {
+        const v = obj.$date;
+        return v instanceof Date ? v : new Date(v);
+    }
+    if (Array.isArray(obj)) return obj.map(normalizeExtendedJsonDates);
+    if (Object.prototype.toString.call(obj) === '[object Object]') {
+        const out = {};
+        for (const key of Object.keys(obj)) out[key] = normalizeExtendedJsonDates(obj[key]);
+        return out;
+    }
+    return obj;
+}
+
 // Helper function to safely extract user/provider data for response
 const getUserResponse = (user) => {
     if (!user) return null;
+    const u = user.toObject ? user.toObject() : user;
+    const normalized = normalizeExtendedJsonDates(u);
     return {
-        _id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        phoneNumber: user.phoneNumber,
-        profilePictureUrl: user.profilePictureUrl,
-        isEmailVerified: user.isEmailVerified,
-        isPhoneVerified: user.isPhoneVerified,
-        accountStatus: user.accountStatus,
-        oauthProvider: user.oauthProvider,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        _id: normalized._id,
+        email: normalized.email,
+        fullName: normalized.fullName,
+        phoneNumber: normalized.phoneNumber,
+        profilePictureUrl: normalized.profilePictureUrl,
+        isEmailVerified: normalized.isEmailVerified,
+        isPhoneVerified: normalized.isPhoneVerified,
+        accountStatus: normalized.accountStatus,
+        oauthProvider: normalized.oauthProvider,
+        createdAt: normalized.createdAt,
+        updatedAt: normalized.updatedAt
     };
 };
 
@@ -430,40 +448,42 @@ const AuthController = {
                 return res.status(400).json({ message: 'Email is required from OAuth provider' });
             }
 
-            // Check if user already exists
-            let user = await User.findOne({ email: email.toLowerCase() });
-            
-            if (!user) {
+            // Check if user already exists (use .lean() to avoid hydrating docs with extended JSON dates)
+            let userRaw = await User.findOne({ email: email.toLowerCase() }).lean();
+            let user;
+
+            if (!userRaw) {
                 // Create new user from OAuth
                 user = new User({
                     email: email.toLowerCase(),
                     fullName: fullName || 'OAuth User',
                     profilePictureUrl,
                     oauthProvider: provider,
-                    isEmailVerified: true, // OAuth users are pre-verified
-                    isPhoneVerified: false, // Phone verification still required
-                    accountStatus: 'pending', // Pending phone verification
-                    password: null, // No password for OAuth users
+                    isEmailVerified: true,
+                    isPhoneVerified: false,
+                    accountStatus: 'pending',
+                    password: null,
                 });
-
                 await user.save();
             } else {
-                // Update existing user's OAuth information
-                user.oauthProvider = provider;
-                if (profilePictureUrl) {
-                    user.profilePictureUrl = profilePictureUrl;
-                }
-                if (fullName && !user.fullName) {
-                    user.fullName = fullName;
-                }
-                await user.save();
+                // Update existing user without loading the full document (avoids date cast errors)
+                const update = {
+                    oauthProvider: provider,
+                    ...(profilePictureUrl && { profilePictureUrl }),
+                    ...(fullName && !userRaw.fullName && { fullName }),
+                };
+                await User.updateOne({ _id: userRaw._id }, { $set: update });
+                const updatedRaw = await User.findById(userRaw._id).lean();
+                user = normalizeExtendedJsonDates(updatedRaw);
             }
 
-            // Generate JWT token
-            const token = generateToken({ id: user._id, type: 'user' });
+            // Generate JWT token (user is either a Mongoose doc or a plain object with _id)
+            const userId = user._id || user.id;
+            const token = generateToken({ id: userId, type: 'user' });
 
-            // Return user data and token
-            const userResponse = getUserResponse(user);
+            // Return user data and token (getUserResponse accepts doc or plain object)
+            const userForResponse = user && user.toObject ? user : user;
+            const userResponse = getUserResponse(userForResponse);
             res.status(200).json({
                 message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} login successful`,
                 user: userResponse,
