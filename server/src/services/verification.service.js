@@ -1,39 +1,30 @@
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const twilio = require('twilio');
 
 class VerificationService {
     constructor() {
         // Email configuration
-        this.emailTransporter = null;
-        this.setupEmailTransporter();
+        this.resend = null;
+        this.setupEmailService();
 
         // Twilio client for SMS
         this.twilioClient = null;
         this.setupTwilioClient();
     }
 
-    setupEmailTransporter() {
-        if (process.env.EMAIL_USER && 
-            process.env.EMAIL_PASS && 
-            process.env.EMAIL_USER !== 'your-email@gmail.com' &&
-            process.env.EMAIL_PASS !== 'your-app-password') {
+    setupEmailService() {
+        if (process.env.RESEND_API_KEY) {
             try {
-                this.emailTransporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: {
-                        user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASS
-                    }
-                });
-                console.log('✅ Email service configured with Gmail');
+                this.resend = new Resend(process.env.RESEND_API_KEY);
+                console.log('✅ Email service configured with Resend');
             } catch (error) {
-                console.warn('⚠️  Invalid email credentials. Email verification will be mocked.');
-                this.emailTransporter = null;
+                console.warn('⚠️  Invalid Resend API key. Email verification will be mocked.');
+                this.resend = null;
             }
         } else {
-            console.warn('⚠️  Email credentials not configured. Email verification will be mocked.');
-            console.log('📧 To enable real email verification, set EMAIL_USER and EMAIL_PASS in .env');
+            console.warn('⚠️  RESEND_API_KEY not configured. Email verification will be mocked.');
+            console.log('📧 To enable real email verification, set RESEND_API_KEY and EMAIL_FROM in .env');
         }
     }
 
@@ -74,12 +65,12 @@ class VerificationService {
      */
     async sendEmailVerification(email, fullName, token) {
         try {
-            if (this.emailTransporter) {
-                // Send real email
+            if (this.resend) {
                 const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+                const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 
-                const mailOptions = {
-                    from: process.env.EMAIL_USER,
+                const { data, error } = await this.resend.emails.send({
+                    from: emailFrom,
                     to: email,
                     subject: 'Verify Your JO Service Account',
                     html: `
@@ -98,28 +89,25 @@ class VerificationService {
                             <p>Best regards,<br>The JO Service Team</p>
                         </div>
                     `
-                };
+                });
 
-                const result = await this.emailTransporter.sendMail(mailOptions);
-                console.log('📧 Email verification sent:', result.messageId);
+                if (error) {
+                    console.error('❌ Resend API error:', error);
+                    return false;
+                }
+
+                console.log('📧 Email verification sent via Resend:', data.id);
                 return true;
             } else {
                 // Mock email for development
                 console.log('📧 [MOCK] Email verification sent to:', email);
                 console.log('📧 [MOCK] Verification token:', token);
                 console.log('📧 [MOCK] Verification URL:', `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`);
-                console.log('📧 [MOCK] In production, this would be sent via Gmail');
+                console.log('📧 [MOCK] In production, this would be sent via Resend');
                 return true;
             }
         } catch (error) {
             console.error('❌ Error sending email verification:', error);
-            
-            if (error.code === 'EAUTH') {
-                console.error('Authentication failed. Check EMAIL_USER and EMAIL_PASS in .env');
-            } else if (error.code === 'ECONNECTION') {
-                console.error('Connection failed. Check your internet connection and Gmail settings');
-            }
-            
             return false;
         }
     }

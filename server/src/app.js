@@ -70,9 +70,10 @@ console.log('WebSocket server initialized');
 // --- Start the HTTP server ---
 server.listen(PORT, '0.0.0.0', () => { 
     console.log(`🚀 Server (HTTP + WebSocket) is running on port ${PORT}`);
-    console.log(`📚 API Documentation available at: http://localhost:${PORT}/api-docs`);
-    console.log(`📱 Mobile app can connect at: http://10.46.6.68:${PORT}`);
-    console.log(`🌐 Network accessible at: http://10.46.6.68:${PORT}`);
+    console.log(`📚 API Documentation available at: /api-docs`);
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`📡 Local development: http://localhost:${PORT}`);
+    }
 });
 
 module.exports = app; // Keep exporting app for potential testing 
