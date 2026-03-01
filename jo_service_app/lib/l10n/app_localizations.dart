@@ -101,8 +101,20 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'JO Service'**
+  /// **'JO'**
   String get appTitle;
+
+  /// No description provided for @appTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'On-Demand Services'**
+  String get appTagline;
+
+  /// No description provided for @appBrandSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Services at your doorstep'**
+  String get appBrandSubtitle;
 
   /// No description provided for @welcome.
   ///

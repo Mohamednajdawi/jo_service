@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -13,6 +13,7 @@ import '../services/booking_service.dart';
 import '../services/conversation_service.dart';
 import '../models/booking_model.dart';
 import '../models/chat_conversation.dart';
+import '../constants/theme.dart';
 import '../widgets/full_screen_image_viewer.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _ChatScreenState extends State<ChatScreen>
   late AnimationController _animationController;
 
   // iOS-style colors
-  static const Color _iMessageBlue = Color(0xFF007AFF);
+  static Color get _iMessageBlue => AppTheme.primary;
   static const Color _messageGray = Color(0xFFE5E5EA);
   static const Color _textGray = Color(0xFF8E8E93);
   static const Color _backgroundGray = Color(0xFFF2F2F7);
@@ -313,7 +314,7 @@ class _ChatScreenState extends State<ChatScreen>
                 Text('Not connected to chat service'),
               ],
             ),
-            backgroundColor: Colors.red[600],
+            backgroundColor: AppTheme.danger,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -347,9 +348,9 @@ class _ChatScreenState extends State<ChatScreen>
           _buildBookingPhotos(),
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(_iMessageBlue),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
                     ),
                   )
                 : _messages.isEmpty
@@ -375,7 +376,7 @@ class _ChatScreenState extends State<ChatScreen>
       elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF007AFF), size: 20),
+        icon: Icon(Icons.arrow_back_ios, color: AppTheme.primary, size: 20),
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: Row(
@@ -432,7 +433,7 @@ class _ChatScreenState extends State<ChatScreen>
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.videocam_rounded, color: Color(0xFF007AFF)),
+          icon: Icon(Icons.videocam_rounded, color: AppTheme.primary),
           onPressed: () {
             // Future: Video call functionality
             ScaffoldMessenger.of(context).showSnackBar(
@@ -441,7 +442,7 @@ class _ChatScreenState extends State<ChatScreen>
           },
         ),
         IconButton(
-          icon: const Icon(Icons.phone, color: Color(0xFF007AFF)),
+          icon: Icon(Icons.phone, color: AppTheme.primary),
           onPressed: () {
             // Future: Voice call functionality
             ScaffoldMessenger.of(context).showSnackBar(
@@ -461,8 +462,8 @@ class _ChatScreenState extends State<ChatScreen>
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            Color(0xFF007AFF),
-            Color(0xFF5856D6),
+            AppTheme.primary,
+            AppTheme.secondary,
           ],
         ),
       ),
@@ -493,10 +494,10 @@ class _ChatScreenState extends State<ChatScreen>
               color: _iMessageBlue.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.chat_bubble_outline_rounded,
               size: 40,
-              color: _iMessageBlue,
+              color: AppTheme.primary,
             ),
           ),
           const SizedBox(height: 16),
@@ -720,22 +721,22 @@ class _ChatScreenState extends State<ChatScreen>
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: AppTheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: Colors.blue[200]!),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.photo_camera, color: Colors.blue[600], size: 20),
+              Icon(Icons.photo_camera, color: AppTheme.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Booking Photo',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue[800],
+                  color: AppTheme.primary,
                   fontSize: 14,
                 ),
               ),
@@ -919,8 +920,8 @@ class _ChatScreenState extends State<ChatScreen>
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            Color(0xFF007AFF),
-            Color(0xFF5856D6),
+            AppTheme.primary,
+            AppTheme.secondary,
           ],
         ),
       ),
@@ -1168,7 +1169,7 @@ class _ChatScreenState extends State<ChatScreen>
             ),
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.red[600],
+                foregroundColor: AppTheme.danger,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: const Text(
@@ -1261,8 +1262,8 @@ class _ChatScreenState extends State<ChatScreen>
 
       if (image == null) return;
 
-      // Send the image
-      await _sendImageMessage(File(image.path));
+      // Send the image (use XFile bytes so it works on web and iOS)
+      await _sendImageMessage(image);
       
     } catch (e) {
       if (mounted) {
@@ -1274,7 +1275,7 @@ class _ChatScreenState extends State<ChatScreen>
   }
 
   // Send image message to backend
-  Future<void> _sendImageMessage(File imageFile) async {
+  Future<void> _sendImageMessage(XFile imageFile) async {
     try {
       final token = await _authService.getToken();
       final currentUserId = await _authService.getUserId();
@@ -1290,22 +1291,33 @@ class _ChatScreenState extends State<ChatScreen>
       request.headers['Authorization'] = 'Bearer $token';
       request.fields['recipientType'] = widget.conversation.participantType;
       
-      // Add the image file
+      // Use bytes instead of file path so it works on web and iOS (no path/sandbox issues)
+      final bytes = await imageFile.readAsBytes();
+      final filename = imageFile.name ?? 'image.jpg';
       request.files.add(
-        await http.MultipartFile.fromPath(
+        http.MultipartFile.fromBytes(
           'images',
-          imageFile.path,
+          bytes,
+          filename: filename,
         ),
       );
 
-      
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      
       if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse response to get server image URL
+        String? imageUrl;
+        try {
+          final data = json.decode(response.body) as Map<String, dynamic>;
+          final images = data['images'] as List<dynamic>?;
+          if (images != null && images.isNotEmpty) {
+            final path = images.first.toString();
+            imageUrl = path.startsWith('http') ? path : '$baseUrl$path';
+          }
+        } catch (_) {}
         
-        // Create optimistic message for immediate UI update
+        final displayUrl = imageUrl ?? '';
         final optimisticMessage = ChatMessage(
           senderId: currentUserId,
           recipientId: widget.conversation.participantId,
@@ -1314,15 +1326,15 @@ class _ChatScreenState extends State<ChatScreen>
           senderType: widget.conversation.participantType == 'user' ? 'provider' : 'user',
           isMe: true,
           messageType: 'image',
-          imageUrls: [imageFile.path], // Use local path temporarily
+          imageUrls: displayUrl.isNotEmpty ? [displayUrl] : [],
         );
         
-        setState(() {
-          _messages.add(optimisticMessage);
-        });
-        
-        _scrollToBottom();
-        
+        if (mounted) {
+          setState(() {
+            _messages.add(optimisticMessage);
+          });
+          _scrollToBottom();
+        }
       } else {
         throw Exception('Failed to send image: ${response.body}');
       }
@@ -1380,7 +1392,7 @@ class _ChatScreenState extends State<ChatScreen>
                   maxHeight: 120,
                 ),
                 decoration: BoxDecoration(
-                  color: _backgroundGray,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: Colors.grey[300]!,
@@ -1400,6 +1412,8 @@ class _ChatScreenState extends State<ChatScreen>
                     color: Colors.black,
                   ),
                   decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
                     hintText: 'iMessage',
                     hintStyle: TextStyle(
                       color: _textGray,

@@ -297,12 +297,12 @@ class _ProviderSignUpScreenState extends State<ProviderSignUpScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF34C759).withOpacity(0.1),
+                              color: AppTheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
                               Icons.person_outline,
-                              color: const Color(0xFF34C759),
+                              color: AppTheme.primary,
                               size: 20,
                             ),
                           ),
@@ -393,12 +393,12 @@ class _ProviderSignUpScreenState extends State<ProviderSignUpScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF34C759).withOpacity(0.1),
+                              color: AppTheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
                               Icons.business_outlined,
-                              color: const Color(0xFF34C759),
+                              color: AppTheme.primary,
                               size: 20,
                             ),
                           ),
@@ -575,7 +575,7 @@ class _ProviderSignUpScreenState extends State<ProviderSignUpScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF34C759).withOpacity(0.3),
+                        color: AppTheme.primary.withOpacity(0.3),
                         offset: const Offset(0, 8),
                         blurRadius: 24,
                       ),
@@ -584,7 +584,7 @@ class _ProviderSignUpScreenState extends State<ProviderSignUpScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF34C759),
+                      backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shadowColor: Colors.transparent,
@@ -691,7 +691,7 @@ class _ProviderSignUpScreenState extends State<ProviderSignUpScreen> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
-              color: Color(0xFF34C759),
+              color: AppTheme.primary,
               width: 2,
             ),
           ),

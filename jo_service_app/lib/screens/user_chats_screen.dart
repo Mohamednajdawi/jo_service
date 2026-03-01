@@ -10,6 +10,7 @@ import '../models/provider_model.dart';
 import '../models/chat_conversation.dart';
 import 'chat_screen.dart';
 import 'package:intl/intl.dart';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/conversation_service.dart';
 
@@ -481,7 +482,7 @@ class _UserChatsScreenState extends State<UserChatsScreen> {
                       width: 14,
                       height: 14,
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: AppTheme.success,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.white,

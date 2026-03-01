@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/theme.dart';
 import '../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -121,7 +122,7 @@ class _AdminCreateProviderScreenState extends State<AdminCreateProviderScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Provider account created successfully!'),
-          backgroundColor: Color(0xFF34C759),
+          backgroundColor: AppTheme.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -177,7 +178,7 @@ class _AdminCreateProviderScreenState extends State<AdminCreateProviderScreen> {
             child: Text(
               'Create',
               style: TextStyle(
-                color: _isLoading ? const Color(0xFF8E8E93) : const Color(0xFF007AFF),
+                color: _isLoading ? const Color(0xFF8E8E93) : AppTheme.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -374,7 +375,7 @@ class _AdminCreateProviderScreenState extends State<AdminCreateProviderScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createProvider,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF007AFF),
+                    backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -464,7 +465,7 @@ class _AdminCreateProviderScreenState extends State<AdminCreateProviderScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: Color(0xFF007AFF),
+            color: AppTheme.primary,
             width: 2,
           ),
         ),
@@ -530,7 +531,7 @@ class _AdminCreateProviderScreenState extends State<AdminCreateProviderScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: Color(0xFF007AFF),
+            color: AppTheme.primary,
             width: 2,
           ),
         ),

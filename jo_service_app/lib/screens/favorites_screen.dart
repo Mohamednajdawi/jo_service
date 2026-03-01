@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import 'package:provider/provider.dart' as ctxProvider;
 import '../l10n/app_localizations.dart';
 import '../models/provider_model.dart';
@@ -219,7 +220,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         IconButton(
                           icon: Icon(
                             Icons.favorite,
-                            color: Colors.red,
+                            color: AppTheme.danger,
                           ),
                           onPressed: () {
                             // Remove from favorites using global set

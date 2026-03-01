@@ -1,7 +1,8 @@
 {
   "@@locale": "ar",
   
-  "appTitle": "خدمة الأردن",
+  "appTitle": "جو",
+  "appTagline": "خدمات عند الطلب",
   "welcome": "مرحباً",
   "login": "تسجيل الدخول",
   "signup": "إنشاء حساب",
@@ -181,6 +182,7 @@
   "welcomeBack": "أهلاً بعودتك!",
   "readyToServe": "مستعد للخدمة؟",
   "jordanServiceProvider": "مقدم خدمة أردني",
+  "appBrandSubtitle": "خدمات عند عتبة بابك",
   "findPerfectService": "ابحث عن مقدم الخدمة المثالي لاحتياجاتك",
   "quickActions": "إجراءات سريعة",
   "browseProviders": "تصفح مقدمي الخدمة",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../constants/theme.dart';
 import 'package:provider/provider.dart';
 import '../models/booking_model.dart';
 import '../services/auth_service.dart';
@@ -297,12 +298,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     switch (status) {
       case 'cancelled_by_user':
       case 'declined_by_provider':
-        return Colors.red;
+        return AppTheme.danger;
       case 'accepted':
       case 'completed':
-        return Colors.green;
+        return AppTheme.primary;
       case 'in_progress':
-        return Colors.blue;
+        return AppTheme.primary;
       default:
         return Colors.black;
     }
@@ -317,7 +318,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         return ElevatedButton.icon(
           icon: const Icon(Icons.cancel, color: Colors.white),
           label: Text(AppLocalizations.of(context)!.cancelBooking),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
           onPressed: () =>
               _showConfirmationDialog('cancel', 'cancelled_by_user'),
         );
@@ -329,15 +330,15 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton.icon(
-              icon: const Icon(Icons.check_circle, color: Colors.white),
+              icon: const Icon(Icons.check_circle, color: AppTheme.white),
               label: Text(AppLocalizations.of(context)!.accept),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
               onPressed: () => _showConfirmationDialog('accept', 'accepted'),
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.cancel, color: Colors.white),
               label: Text(AppLocalizations.of(context)!.decline),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
               onPressed: () =>
                   _showConfirmationDialog('decline', 'declined_by_provider'),
             ),
@@ -347,14 +348,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         return ElevatedButton.icon(
           icon: const Icon(Icons.play_arrow, color: Colors.white),
           label: Text(AppLocalizations.of(context)!.startService),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
           onPressed: () => _showConfirmationDialog('start', 'in_progress'),
         );
       } else if (_booking!.canBeMarkedCompleted) {
         return ElevatedButton.icon(
           icon: const Icon(Icons.done_all, color: Colors.white),
           label: Text(AppLocalizations.of(context)!.completeService),
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
           onPressed: () => _showConfirmationDialog('complete', 'completed'),
         );
       }
@@ -375,12 +376,15 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         margin: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.green[50]!, Colors.green[100]!],
+            colors: [
+              AppTheme.primary.withOpacity(0.1),
+              AppTheme.primary.withOpacity(0.2),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.green[200]!, width: 1),
+          border: Border.all(color: AppTheme.primary.withOpacity(0.4), width: 1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -388,7 +392,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             children: [
               Icon(
                 Icons.check_circle,
-                color: Colors.green[600],
+                color: AppTheme.primary,
                 size: 48,
               ),
               const SizedBox(height: 12),
@@ -403,7 +407,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               Text(
                 'You have successfully rated this service.',
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: AppTheme.grey,
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
@@ -417,11 +421,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: AppTheme.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 2),
@@ -437,12 +441,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
+                    color: AppTheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.star_rate,
-                    color: Colors.blue[600],
+                    color: AppTheme.primary,
                     size: 24,
                   ),
                 ),
@@ -463,7 +467,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                         'Share your experience with detailed ratings',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey,
+                          color: AppTheme.grey,
                         ),
                       ),
                     ],
@@ -478,13 +482,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 gradient: LinearGradient(
-                  colors: [Colors.blue[600]!, Colors.blue[700]!],
+                  colors: [AppTheme.primary, AppTheme.secondary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: AppTheme.primary.withOpacity(0.3),
                     spreadRadius: 1,
                     blurRadius: 8,
                     offset: const Offset(0, 4),
@@ -505,7 +509,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   children: [
                     const Icon(
                       Icons.rate_review,
-                      color: Colors.white,
+                      color: AppTheme.white,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -514,7 +518,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.white,
                       ),
                     ),
                   ],
@@ -541,7 +545,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.locationNotSpecified),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppTheme.warning,
           ),
         );
       }
@@ -549,7 +553,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to open navigation: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -607,7 +611,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                                       Text(
                                         '${AppLocalizations.of(context)!.pending} ${DateFormat('MMM dd, yyyy').format(_booking!.createdAt!)}',
                                         style:
-                                            const TextStyle(color: Colors.grey),
+                                            TextStyle(color: AppTheme.grey),
                                       ),
                                   ],
                                 ),

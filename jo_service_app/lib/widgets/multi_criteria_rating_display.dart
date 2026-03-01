@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../models/rating_model.dart';
 
 class MultiCriteriaRatingDisplay extends StatelessWidget {
@@ -39,12 +40,15 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue[50]!, Colors.blue[100]!],
+          colors: [
+            AppTheme.primary.withOpacity(0.08),
+            AppTheme.primary.withOpacity(0.15),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue[200]!, width: 1),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -56,7 +60,7 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: AppTheme.primary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -98,29 +102,29 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: AppTheme.primary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 _buildCompactCriteriaItem(
                   'Punctuality', 
                   ratingStats.averagePunctuality,
-                  Colors.green,
+                  AppTheme.success,
                 ),
                 _buildCompactCriteriaItem(
                   'Work Quality', 
                   ratingStats.averageWorkQuality,
-                  Colors.blue,
+                  AppTheme.primary,
                 ),
                 _buildCompactCriteriaItem(
                   'Speed & Efficiency', 
                   ratingStats.averageSpeedAndEfficiency,
-                  Colors.orange,
+                  AppTheme.warning,
                 ),
                 _buildCompactCriteriaItem(
                   'Cleanliness', 
                   ratingStats.averageCleanliness,
-                  Colors.purple,
+                  AppTheme.secondary,
                 ),
               ],
             ),
@@ -192,7 +196,7 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
           title: 'Punctuality',
           description: 'Provider arrives on time',
           icon: Icons.access_time,
-          color: Colors.green,
+          color: AppTheme.success,
           rating: ratingStats.averagePunctuality,
         ),
         
@@ -200,7 +204,7 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
           title: 'Work Quality',
           description: 'Quality of service provided',
           icon: Icons.work_outline,
-          color: Colors.blue,
+          color: AppTheme.primary,
           rating: ratingStats.averageWorkQuality,
         ),
         
@@ -208,7 +212,7 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
           title: 'Speed & Efficiency',
           description: 'How efficiently service is completed',
           icon: Icons.speed,
-          color: Colors.orange,
+          color: AppTheme.warning,
           rating: ratingStats.averageSpeedAndEfficiency,
         ),
         
@@ -369,11 +373,11 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundColor: Colors.blue[100],
+                backgroundColor: AppTheme.primary.withOpacity(0.15),
                 child: Text(
                   'U',
                   style: TextStyle(
-                    color: Colors.blue[600],
+                    color: AppTheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -431,10 +435,10 @@ class MultiCriteriaRatingDisplay extends StatelessWidget {
           Wrap(
             spacing: 8,
             children: [
-              _buildMiniCriteriaChip('Punctuality', rating.punctuality, Colors.green),
-              _buildMiniCriteriaChip('Quality', rating.workQuality, Colors.blue),
-              _buildMiniCriteriaChip('Speed', rating.speedAndEfficiency, Colors.orange),
-              _buildMiniCriteriaChip('Cleanliness', rating.cleanliness, Colors.purple),
+              _buildMiniCriteriaChip('Punctuality', rating.punctuality, AppTheme.success),
+              _buildMiniCriteriaChip('Quality', rating.workQuality, AppTheme.primary),
+              _buildMiniCriteriaChip('Speed', rating.speedAndEfficiency, AppTheme.warning),
+              _buildMiniCriteriaChip('Cleanliness', rating.cleanliness, AppTheme.secondary),
             ],
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import 'package:provider/provider.dart';
 import '../services/push_notification_service.dart';
 import '../services/auth_service.dart';
@@ -66,7 +67,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.settingsSaved),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.primary,
             ),
           );
         }
@@ -75,7 +76,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.errorSavingSettings),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.danger,
             ),
           );
         }
@@ -85,7 +86,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.errorSavingSettings),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -101,7 +102,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       // Show a local test notification
       await _notificationService.showLocalNotification(
         title: 'Test Notification',
-        body: 'This is a test notification from JO Service App',
+        body: 'This is a test notification from JO',
         data: {'type': 'test', 'timestamp': DateTime.now().toIso8601String()},
       );
       
@@ -109,7 +110,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.testNotificationSent),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.primary,
           ),
         );
       }
@@ -118,7 +119,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.errorSendingTestNotification),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -253,7 +254,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
                   // Additional Information
                   Card(
-                    color: Colors.blue[50],
+                    color: AppTheme.primary.withOpacity(0.1),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -263,14 +264,14 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: Colors.blue[700],
+                                color: AppTheme.primary,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 l10n.notificationInfo,
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
+                                  color: AppTheme.primary,
                                 ),
                               ),
                             ],
@@ -279,7 +280,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                           Text(
                             l10n.notificationInfoDescription,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.blue[700],
+                              color: AppTheme.primary,
                             ),
                           ),
                         ],

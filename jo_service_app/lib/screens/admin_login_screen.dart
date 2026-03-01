@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart'; // Add API service import
 import '../widgets/uber_input.dart';
@@ -122,10 +123,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF007AFF).withOpacity(0.1),
+                    color: AppTheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFF007AFF).withOpacity(0.3),
+                      color: AppTheme.primary.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -134,14 +135,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     children: [
                       Icon(
                         Icons.admin_panel_settings,
-                        color: const Color(0xFF007AFF),
+                        color: AppTheme.primary,
                         size: 16,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         'ADMIN ACCESS',
                         style: TextStyle(
-                          color: const Color(0xFF007AFF),
+                          color: AppTheme.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
@@ -180,10 +181,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF34C759).withOpacity(0.1),
+                    color: AppTheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: const Color(0xFF34C759).withOpacity(0.3),
+                      color: AppTheme.primary.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -194,14 +195,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: const Color(0xFF34C759),
+                            color: AppTheme.primary,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Demo Credentials',
                             style: TextStyle(
-                              color: const Color(0xFF34C759),
+                              color: AppTheme.primary,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -287,7 +288,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007AFF),
+                      backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shadowColor: Colors.transparent,

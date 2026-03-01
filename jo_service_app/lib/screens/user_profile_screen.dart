@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart' as ctxProvider;
@@ -247,7 +248,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 );
               }
             },
-            child: Text(l10n.logout, style: const TextStyle(color: Colors.red)),
+            child: Text(l10n.logout, style: const TextStyle(color: AppTheme.danger)),
           ),
         ],
       ),
@@ -270,18 +271,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: AppTheme.danger.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning, color: Colors.red, size: 20),
+                  const Icon(Icons.warning, color: AppTheme.danger, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       l10n.deleteAccountWarning,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                      style: const TextStyle(color: AppTheme.danger, fontSize: 12),
                     ),
                   ),
                 ],
@@ -299,7 +300,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               Navigator.pop(context);
               await _deleteAccount();
             },
-            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: AppTheme.danger)),
           ),
         ],
       ),
@@ -337,7 +338,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.accountDeleted),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.primary,
           ),
         );
         
@@ -354,7 +355,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.failedToDeleteAccount}: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }

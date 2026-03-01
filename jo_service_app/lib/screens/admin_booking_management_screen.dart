@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/theme.dart';
 import '../services/api_service.dart';
 import '../models/booking_model.dart';
 import '../l10n/app_localizations.dart';
@@ -160,9 +161,9 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
         return '0xFFFF9500';
       case 'accepted':
       case 'in_progress':
-        return '0xFF007AFF';
+        return '0xFF6366F1'; // AppTheme.primary
       case 'completed':
-        return '0xFF34C759';
+        return '0xFF6366F1'; // AppTheme.primary
       case 'cancelled_by_user':
       case 'declined_by_provider':
         return '0xFFFF3B30';
@@ -313,7 +314,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF007AFF),
+                  color: AppTheme.primary,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
@@ -593,9 +594,9 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF007AFF),
+          labelColor: AppTheme.primary,
           unselectedLabelColor: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6B7280),
-          indicatorColor: const Color(0xFF007AFF),
+          indicatorColor: AppTheme.primary,
           isScrollable: true,
           tabs: [
             Tab(
@@ -608,7 +609,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                       margin: const EdgeInsets.only(top: 2),
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF007AFF),
+                        color: AppTheme.primary,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -680,7 +681,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                     margin: const EdgeInsets.only(top: 2),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF007AFF),
+                      color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -704,7 +705,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                     margin: const EdgeInsets.only(top: 2),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF34C759),
+                      color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -724,7 +725,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF007AFF)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : _error != null
               ? Center(
                   child: Column(
@@ -785,7 +786,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
     return RefreshIndicator(
       onRefresh: _loadActivityFeed,
       child: _isLoadingActivity
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF007AFF)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : _activityFeed.isEmpty
               ? const Center(
                   child: Column(
@@ -826,7 +827,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                       decoration: BoxDecoration(
                         color: const Color(0xFFF0F8FF),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF007AFF).withOpacity(0.2)),
+                        border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
                       ),
                       child: Column(
                         children: [
@@ -835,7 +836,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF007AFF),
+                              color: AppTheme.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -905,7 +906,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
     return RefreshIndicator(
       onRefresh: _loadAnalytics,
       child: _isLoadingAnalytics
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF007AFF)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -953,7 +954,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                         '${_allBookings.length}',
                         'All time',
                         Icons.book_online,
-                        const Color(0xFF007AFF),
+                        AppTheme.primary,
                       ),
                       _buildAnalyticsCard(
                         'Pending',
@@ -967,7 +968,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
                         '${_completedBookings.length}',
                         'Successfully finished',
                         Icons.check_circle,
-                        const Color(0xFF34C759),
+                        AppTheme.primary,
                       ),
                       _buildAnalyticsCard(
                         'Cancelled',

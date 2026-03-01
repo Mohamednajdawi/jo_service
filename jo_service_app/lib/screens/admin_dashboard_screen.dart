@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/theme.dart';
 import '../services/api_service.dart';
 import '../models/provider_model.dart';
 import '../l10n/app_localizations.dart';
@@ -125,7 +126,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${AppLocalizations.of(context)!.providerStatusUpdatedTo} $newStatus'),
-          backgroundColor: const Color(0xFF34C759),
+          backgroundColor: AppTheme.primary,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -235,9 +236,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF007AFF),
+          labelColor: AppTheme.primary,
           unselectedLabelColor: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6B7280),
-          indicatorColor: const Color(0xFF007AFF),
+          indicatorColor: AppTheme.primary,
           tabs: [
             Tab(
               child: Column(
@@ -296,7 +297,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     margin: const EdgeInsets.only(top: 2),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF34C759),
+                      color: AppTheme.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -439,7 +440,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     
     switch (status) {
       case 'verified':
-        statusColor = const Color(0xFF34C759);
+        statusColor = AppTheme.primary;
         statusIcon = Icons.verified;
         break;
       case 'pending':
@@ -576,7 +577,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         child: ElevatedButton.icon(
                           onPressed: () => _updateProviderStatus(provider.id ?? '', 'verified'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF34C759),
+                            backgroundColor: AppTheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -617,8 +618,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _updateProviderStatus(provider.id ?? '', 'pending'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF007AFF),
-                            side: const BorderSide(color: Color(0xFF007AFF)),
+                            foregroundColor: AppTheme.primary,
+                            side: const BorderSide(color: AppTheme.primary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -657,7 +658,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         child: ElevatedButton.icon(
                           onPressed: () => _updateProviderStatus(provider.id ?? '', 'verified'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF34C759),
+                            backgroundColor: AppTheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -676,8 +677,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _updateProviderStatus(provider.id ?? '', 'pending'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF007AFF),
-                            side: const BorderSide(color: Color(0xFF007AFF)),
+                            foregroundColor: AppTheme.primary,
+                            side: const BorderSide(color: AppTheme.primary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -743,7 +744,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                   child: Text(
                     'Close',
                     style: TextStyle(
-                      color: const Color(0xFF007AFF),
+                      color: AppTheme.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -785,7 +786,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               _updateProviderStatus(provider.id ?? '', 'verified');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF34C759),
+                              backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -834,8 +835,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               _updateProviderStatus(provider.id ?? '', 'pending');
                             },
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF007AFF),
-                              side: const BorderSide(color: Color(0xFF007AFF)),
+                              foregroundColor: AppTheme.primary,
+                              side: const BorderSide(color: AppTheme.primary),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -882,7 +883,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               _updateProviderStatus(provider.id ?? '', 'verified');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF34C759),
+                              backgroundColor: AppTheme.primary,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -905,8 +906,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               _updateProviderStatus(provider.id ?? '', 'pending');
                             },
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF007AFF),
-                              side: const BorderSide(color: Color(0xFF007AFF)),
+                              foregroundColor: AppTheme.primary,
+                              side: const BorderSide(color: AppTheme.primary),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),

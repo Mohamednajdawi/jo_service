@@ -15,6 +15,7 @@ import '../widgets/provider_info_card.dart';
 */
 
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 
 // Temporarily disabled due to missing dependencies
@@ -205,7 +206,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
             Text(
               'Error: $_errorMessage',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: AppTheme.danger),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -239,7 +240,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
                   height: 40,
                   builder: (ctx) => const Icon(
                     Icons.my_location,
-                    color: Colors.blue,
+                    color: AppTheme.primary,
                     size: 40,
                   ),
                 ),
@@ -285,8 +286,8 @@ class _MapViewScreenState extends State<MapViewScreen> {
                 CircleMarker(
                   point: _currentLocation,
                   radius: _searchRadius * 1000, // Convert km to meters
-                  color: Colors.blue.withOpacity(0.2),
-                  borderColor: Colors.blue,
+                  color: AppTheme.primary.withOpacity(0.2),
+                  borderColor: AppTheme.primary,
                   borderStrokeWidth: 2,
                 ),
               ],

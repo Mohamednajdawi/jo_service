@@ -447,7 +447,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF34C759).withOpacity(0.3),
+                        color: AppTheme.primary.withOpacity(0.3),
                         offset: const Offset(0, 8),
                         blurRadius: 24,
                       ),
@@ -456,7 +456,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF34C759),
+                      backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shadowColor: Colors.transparent,
@@ -497,7 +497,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                     },
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      foregroundColor: const Color(0xFF34C759),
+                      foregroundColor: AppTheme.primary,
                     ),
                     child: RichText(
                       text: TextSpan(
@@ -510,7 +510,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                           TextSpan(
                             text: 'Sign in',
                             style: TextStyle(
-                              color: const Color(0xFF34C759),
+                              color: AppTheme.primary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -595,7 +595,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
-              color: Color(0xFF34C759),
+              color: AppTheme.primary,
               width: 2,
             ),
           ),

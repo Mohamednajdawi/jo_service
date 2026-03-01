@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
@@ -198,7 +199,7 @@ class _ProviderMessagesScreenState extends State<ProviderMessagesScreen> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: const Color(0xFF007AFF).withOpacity(0.1),
+                      backgroundColor: AppTheme.primary.withOpacity(0.1),
                                                                   backgroundImage: hasAvatar ? NetworkImage('${ConversationService.baseImageUrl}/$avatarUrl') : null,
                       child: !hasAvatar
                           ? Text(
@@ -206,7 +207,7 @@ class _ProviderMessagesScreenState extends State<ProviderMessagesScreen> {
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF007AFF),
+                                color: AppTheme.primary,
                               ),
                             )
                           : null,
@@ -219,7 +220,7 @@ class _ProviderMessagesScreenState extends State<ProviderMessagesScreen> {
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF34C759),
+                            color: AppTheme.success,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: isDark ? const Color(0xFF2C2C2E) : Colors.white,

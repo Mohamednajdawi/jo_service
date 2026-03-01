@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -103,7 +104,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error picking image: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -168,7 +169,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error opening location picker: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -568,7 +569,7 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
                                         decoration: const BoxDecoration(
-                                          color: Colors.red,
+                                          color: AppTheme.danger,
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(

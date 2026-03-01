@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/theme.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
@@ -180,7 +181,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
               ),
             ],
           ),
-          backgroundColor: const Color(0xFF34C759),
+          backgroundColor: AppTheme.primary,
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -363,7 +364,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${l10n.failedToOpenNavigation}: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -396,7 +397,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.bookingStatusUpdatedTo(newStatus.replaceAll('_', ' '))),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.primary,
         ),
       );
     } catch (e) {
@@ -404,7 +405,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${l10n.errorUpdatingBookingStatus}: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -471,7 +472,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                                   height: 6,
                                   margin: const EdgeInsets.only(right: 6),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF34C759),
+                                    color: AppTheme.primary,
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                   child: TweenAnimationBuilder<double>(
@@ -582,11 +583,11 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _fetchBookings,
-                    color: const Color(0xFF007AFF),
+                    color: AppTheme.primary,
                     child: _isLoading && _bookings.isEmpty
                         ? const Center(
                             child: CircularProgressIndicator(
-                              color: Color(0xFF007AFF),
+                              color: AppTheme.primary,
                             ),
                           )
                         : _bookings.isEmpty
@@ -603,7 +604,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                                       padding: EdgeInsets.symmetric(vertical: 16.0),
                                       child: Center(
                                         child: CircularProgressIndicator(
-                                          color: Color(0xFF007AFF),
+                                          color: AppTheme.primary,
                                         ),
                                       ),
                                     );
@@ -780,7 +781,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                         icon: Icon(
                           Icons.directions_rounded,
                           size: 18,
-                          color: const Color(0xFF007AFF),
+                          color: AppTheme.primary,
                         ),
                         onPressed: () => _openNavigation(booking.serviceLocationDetails!),
                         tooltip: l10n.openInGoogleMaps,
@@ -822,7 +823,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                         child: _buildActionButton(
                           l10n.accept,
                           Icons.check_rounded,
-                          const Color(0xFF34C759),
+                          AppTheme.primary,
                           () => _updateBookingStatus(booking, 'accepted'),
                           isDark,
                         ),
@@ -843,7 +844,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   _buildActionButton(
                     l10n.startService,
                     Icons.play_arrow_rounded,
-                    const Color(0xFF007AFF),
+                    AppTheme.primary,
                     () => _updateBookingStatus(booking, 'in_progress'),
                     isDark,
                   ),
@@ -851,7 +852,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   _buildActionButton(
                     l10n.completeService,
                     Icons.check_circle_rounded,
-                    const Color(0xFF34C759),
+                    AppTheme.primary,
                     () => _updateBookingStatus(booking, 'completed'),
                     isDark,
                   ),
@@ -915,11 +916,10 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       case 'pending':
         return const Color(0xFFFF9500);
       case 'accepted':
-        return const Color(0xFF007AFF);
       case 'in_progress':
-        return const Color(0xFF5856D6);
+        return AppTheme.primary;
       case 'completed':
-        return const Color(0xFF34C759);
+        return AppTheme.primary;
       case 'declined_by_provider':
       case 'cancelled_by_user':
         return const Color(0xFFFF3B30);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import '../constants/theme.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -159,7 +160,7 @@ class _LocationPickerState extends State<LocationPicker> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error finding location: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -192,7 +193,7 @@ class _LocationPickerState extends State<LocationPicker> {
             child: const Text(
               'Confirm',
               style: TextStyle(
-                color: Color(0xFF34C759),
+                color: AppTheme.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -221,7 +222,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         prefixIcon: const Icon(Icons.search, color: Color(0xFF8E8E93)),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.my_location, color: Color(0xFF34C759)),
+                          icon: const Icon(Icons.my_location, color: AppTheme.primary),
                           onPressed: () async {
                             try {
                               await _getCurrentLocation();
@@ -230,7 +231,7 @@ class _LocationPickerState extends State<LocationPicker> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Error getting location: $e'),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: AppTheme.danger,
                                 ),
                               );
                             }
@@ -245,7 +246,7 @@ class _LocationPickerState extends State<LocationPicker> {
                 ElevatedButton(
                   onPressed: _searchLocation,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF34C759),
+                    backgroundColor: AppTheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -262,7 +263,7 @@ class _LocationPickerState extends State<LocationPicker> {
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF007AFF),
+                      color: AppTheme.primary,
                     ),
                   )
                 : _buildMapView(isDark),
@@ -293,12 +294,12 @@ class _LocationPickerState extends State<LocationPicker> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF34C759).withOpacity(0.1),
+                        color: AppTheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.location_on_rounded,
-                        color: Color(0xFF34C759),
+                        color: AppTheme.primary,
                         size: 20,
                       ),
                     ),
@@ -378,7 +379,7 @@ class _LocationPickerState extends State<LocationPicker> {
                   child: ElevatedButton(
                     onPressed: _confirmLocation,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF34C759),
+                      backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -437,12 +438,12 @@ class _LocationPickerState extends State<LocationPicker> {
               height: 40,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF34C759),
+                  color: AppTheme.primary,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF34C759).withOpacity(0.3),
+                      color: AppTheme.primary.withOpacity(0.3),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -480,14 +481,14 @@ class _LocationPickerState extends State<LocationPicker> {
                   child: Column(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.add, color: Color(0xFF34C759)),
+                        icon: const Icon(Icons.add, color: AppTheme.primary),
                         onPressed: () {
                           final currentZoom = _mapController.zoom;
                           _mapController.move(_mapController.center, currentZoom + 1);
                         },
                       ),
                       IconButton(
-                        icon: const Icon(Icons.remove, color: Color(0xFF34C759)),
+                        icon: const Icon(Icons.remove, color: AppTheme.primary),
                         onPressed: () {
                           final currentZoom = _mapController.zoom;
                           _mapController.move(_mapController.center, currentZoom - 1);

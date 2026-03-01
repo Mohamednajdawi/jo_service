@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
           }
           
           return MaterialApp(
-            title: 'JO Service',
+            title: 'JO',
             theme: themeService.currentTheme,
             
             // Internationalization configuration

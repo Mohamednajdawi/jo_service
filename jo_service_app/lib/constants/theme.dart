@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AppTheme {
-  // Apple-inspired green color scheme
-  static const Color primary = Color(0xFF34C759); // Apple Green
-  static const Color secondary = Color(0xFF30D158); // Light Green
-  static const Color accent = Color(0xFF32D74B); // Bright Green
-  static const Color success = Color(0xFF34C759); // Green
+  // Modern indigo-violet color scheme (premium, contemporary)
+  static const Color primary = Color(0xFF6366F1);   // Indigo 500
+  static const Color secondary = Color(0xFF8B5CF6); // Violet 500
+  static const Color accent = Color(0xFF818CF8);    // Indigo 400
+  static const Color success = Color(0xFF22C55E);   // Emerald 500 (semantic)
   static const Color warning = Color(0xFFFF9500); // Orange
   static const Color danger = Color(0xFFFF3B30); // Red
   static const Color dark = Color(0xFF1C1C1E); // Dark background

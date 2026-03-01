@@ -55,7 +55,7 @@ class LocalNotificationService {
     if (Platform.isAndroid) {
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
         'jo_service_channel',
-        'JO Service Notifications',
+        'JO Notifications',
         description: 'Notifications for booking updates, messages, and other important updates',
         importance: Importance.high,
         playSound: true,
@@ -87,7 +87,7 @@ class LocalNotificationService {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'jo_service_channel',
-      'JO Service Notifications',
+      'JO Notifications',
       channelDescription: 'Notifications for booking updates, messages, and other important updates',
       importance: Importance.high,
       priority: Priority.high,

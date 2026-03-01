@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -177,7 +178,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.verificationEmailSent),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.primary,
             ),
           );
         }
@@ -299,33 +300,46 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 48),
                       
-
+                      // Brand hero - App name with premium typography
+                      Text(
+                        l10n.appTitle,
+                        style: TextStyle(
+                          fontSize: 52,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.5,
+                          color: isDark ? Colors.white : const Color(0xFF000000),
+                          height: 1.0,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.appTagline,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                          color: isDark 
+                              ? const Color(0xFF8E8E93) 
+                              : const Color(0xFF6B7280),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 40),
                       
                       // Welcome text
                       Text(
                         l10n.signInToAccount,
                         style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF000000),
-                          height: 1.2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      Text(
-                        'Welcome back! Please sign in to your account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
                           color: isDark 
                               ? const Color(0xFF8E8E93) 
                               : const Color(0xFF6B7280),
-                          height: 1.5,
+                          height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -485,7 +499,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF34C759),
+                                color: AppTheme.primary,
                                 width: 2,
                               ),
                             ),
@@ -574,7 +588,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: const BorderSide(
-                                color: Color(0xFF34C759),
+                                color: AppTheme.primary,
                                 width: 2,
                               ),
                             ),
@@ -612,7 +626,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                               horizontal: 8,
                               vertical: 4,
                             ),
-                            foregroundColor: const Color(0xFF34C759),
+                            foregroundColor: AppTheme.primary,
                           ),
                           child: Text(
                             l10n.forgotPassword,
@@ -680,7 +694,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                       padding: EdgeInsets.zero,
                                       minimumSize: const Size(0, 0),
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      foregroundColor: const Color(0xFF34C759),
+                                      foregroundColor: AppTheme.primary,
                                     ),
                                     child: Text(
                                       l10n.resendVerificationEmail,
@@ -704,7 +718,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF34C759).withOpacity(0.3),
+                              color: AppTheme.primary.withOpacity(0.3),
                               offset: const Offset(0, 8),
                               blurRadius: 24,
                             ),
@@ -713,7 +727,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF34C759),
+                            backgroundColor: AppTheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shadowColor: Colors.transparent,
@@ -768,7 +782,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                 horizontal: 8,
                                 vertical: 4,
                               ),
-                              foregroundColor: const Color(0xFF34C759),
+                              foregroundColor: AppTheme.primary,
                             ),
                             child: Text(
                               l10n.signup,

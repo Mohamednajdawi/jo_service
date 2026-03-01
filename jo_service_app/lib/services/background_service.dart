@@ -161,8 +161,8 @@ class BackgroundService {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'jo_service_channel',
-      'JO Service Notifications',
-      channelDescription: 'Notifications for JO Service app updates',
+      'JO Notifications',
+      channelDescription: 'Notifications for JO app updates',
       importance: Importance.max,
       priority: Priority.high,
     );

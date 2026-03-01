@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import '../widgets/animated_button.dart';
@@ -437,7 +438,7 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
                           subtitle: _isEmailVerified ? 'Verified Successfully' : 'Pending Verification',
                           icon: Icons.email_outlined,
                           isVerified: _isEmailVerified,
-                          color: _isEmailVerified ? const Color(0xFF34C759) : const Color(0xFFFF9500),
+                          color: _isEmailVerified ? AppTheme.success : AppTheme.warning,
                           isDarkMode: isDarkMode,
                         ),
                         
@@ -459,7 +460,7 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
                           subtitle: _isPhoneVerified ? 'Verified Successfully' : 'Pending Verification',
                           icon: Icons.phone_outlined,
                           isVerified: _isPhoneVerified,
-                          color: _isPhoneVerified ? const Color(0xFF34C759) : const Color(0xFFFF9500),
+                          color: _isPhoneVerified ? AppTheme.success : AppTheme.warning,
                           isDarkMode: isDarkMode,
                         ),
                         
@@ -491,12 +492,12 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF007AFF).withValues(alpha: 0.1),
+                                        color: AppTheme.primary.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(
                                         Icons.security,
-                                        color: Color(0xFF007AFF),
+                                        color: AppTheme.primary,
                                         size: 20,
                                       ),
                                     ),
@@ -578,7 +579,7 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
                                   children: [
                                     Icon(
                                       Icons.info_outline,
-                                      color: const Color(0xFF007AFF),
+                                      color: AppTheme.primary,
                                       size: 24,
                                     ),
                                     const SizedBox(width: 12),
@@ -851,11 +852,11 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
           ? Colors.transparent 
           : onPressed == null 
             ? (isDarkMode ? const Color(0xFF2C2C2E) : Colors.grey.withValues(alpha: 0.3))
-            : const Color(0xFF007AFF),
+            : AppTheme.primary,
         borderRadius: BorderRadius.circular(16),
         border: isSecondary 
           ? Border.all(
-              color: const Color(0xFF007AFF),
+              color: AppTheme.primary,
               width: 2,
             )
           : null,
@@ -872,7 +873,7 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: isSecondary 
-                  ? const Color(0xFF007AFF)
+                  ? AppTheme.primary
                   : onPressed == null 
                     ? (isDarkMode ? Colors.grey : Colors.grey)
                     : Colors.white,
@@ -948,13 +949,13 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isSuccess 
-          ? (isDarkMode ? const Color(0xFF1A3A1A) : const Color(0xFF34C759).withValues(alpha: 0.1))
-          : (isDarkMode ? const Color(0xFF3A1A1A) : const Color(0xFFFF3B30).withValues(alpha: 0.1)),
+          ? (isDarkMode ? const Color(0xFF1A3A1A) : AppTheme.success.withValues(alpha: 0.1))
+          : (isDarkMode ? const Color(0xFF3A1A1A) : AppTheme.danger.withValues(alpha: 0.1)),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSuccess 
-            ? const Color(0xFF34C759).withValues(alpha: 0.4)
-            : const Color(0xFFFF3B30).withValues(alpha: 0.4),
+            ? AppTheme.success.withValues(alpha: 0.4)
+            : AppTheme.danger.withValues(alpha: 0.4),
           width: 1.5,
         ),
       ),
@@ -964,12 +965,12 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isSuccess ? const Color(0xFF34C759) : const Color(0xFFFF3B30)).withValues(alpha: 0.2),
+              color: (isSuccess ? AppTheme.success : AppTheme.danger).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isSuccess ? Icons.check_circle : Icons.error_outline,
-              color: isSuccess ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+              color: isSuccess ? AppTheme.success : AppTheme.danger,
               size: 24,
             ),
           ),
@@ -978,7 +979,7 @@ class _UserVerificationScreenState extends State<UserVerificationScreen> {
             child: Text(
               message,
               style: TextStyle(
-                color: isSuccess ? const Color(0xFF34C759) : const Color(0xFFFF3B30),
+                color: isSuccess ? AppTheme.success : AppTheme.danger,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 height: 1.4,

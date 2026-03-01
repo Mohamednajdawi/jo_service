@@ -264,7 +264,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
               Navigator.of(ctx).pop();
               _cancelBooking(booking);
             },
-                          child: Text(AppLocalizations.of(context)!.yes, style: const TextStyle(color: Colors.red)),
+                          child: Text(AppLocalizations.of(context)!.yes, style: TextStyle(color: AppTheme.danger)),
           ),
         ],
       ),
@@ -375,7 +375,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
       'pending': AppTheme.warning,
       'accepted': AppTheme.primary,
       'in_progress': AppTheme.primary,
-      'completed': AppTheme.success,
+      'completed': AppTheme.primary,
       'declined_by_provider': AppTheme.danger,
       'cancelled_by_user': AppTheme.grey,
     };

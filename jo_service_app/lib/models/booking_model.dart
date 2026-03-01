@@ -122,27 +122,23 @@ class Booking {
     }
   }
 
-  // Method to get status color
+  // Method to get status color (matches AppTheme)
   int get statusColor {
     switch (status) {
       case 'pending':
-        return 0xFFFFA726; // Orange
+        return 0xFFFF9500; // AppTheme.warning
       case 'accepted':
-        return 0xFF4CAF50; // Green
-      case 'declined_by_provider':
-        return 0xFFE53935; // Red
-      case 'cancelled_by_user':
-        return 0xFFE53935; // Red
       case 'in_progress':
-        return 0xFF2196F3; // Blue
-      case 'completed':
-        return 0xFF4CAF50; // Green
+        return 0xFF6366F1; // AppTheme.primary
+      case 'declined_by_provider':
+      case 'cancelled_by_user':
       case 'payment_due':
-        return 0xFFE53935; // Red
+        return 0xFFFF3B30; // AppTheme.danger
+      case 'completed':
       case 'paid':
-        return 0xFF4CAF50; // Green
+        return 0xFF6366F1; // AppTheme.primary
       default:
-        return 0xFF9E9E9E; // Grey
+        return 0xFF8E8E93; // AppTheme.grey
     }
   }
 

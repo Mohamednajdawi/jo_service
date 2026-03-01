@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/theme.dart';
 import '../services/rating_service.dart';
 import '../services/auth_service.dart';
 import '../models/booking_model.dart';
@@ -75,9 +76,9 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
     // Validate that provider information is available
     if (widget.booking.provider?.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Provider information not available'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Provider information not available'),
+          backgroundColor: AppTheme.danger,
         ),
       );
       return;
@@ -89,9 +90,9 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
         _speedEfficiencyRating == 0.0 ||
         _cleanlinessRating == 0.0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please rate all criteria before submitting'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: const Text('Please rate all criteria before submitting'),
+          backgroundColor: AppTheme.warning,
         ),
       );
       return;
@@ -126,9 +127,9 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rating submitted successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Rating submitted successfully!'),
+            backgroundColor: AppTheme.primary,
           ),
         );
 
@@ -140,7 +141,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to submit rating: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -292,12 +293,15 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue[50]!, Colors.blue[100]!],
+          colors: [
+            AppTheme.primary.withOpacity(0.08),
+            AppTheme.primary.withOpacity(0.15),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue[200]!, width: 1),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -305,7 +309,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
           children: [
             const Icon(
               Icons.analytics_outlined,
-              color: Colors.blue,
+              color: AppTheme.primary,
               size: 32,
             ),
             const SizedBox(height: 12),
@@ -314,7 +318,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: AppTheme.primary,
               ),
             ),
             const SizedBox(height: 8),
@@ -335,7 +339,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.blue,
+                color: AppTheme.primary,
               ),
             ),
           ],
@@ -356,7 +360,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: AppTheme.primary,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -390,7 +394,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                       Icon(
                         Icons.star_rate,
                         size: 48,
-                        color: Colors.blue[600],
+                        color: AppTheme.primary,
                       ),
                       const SizedBox(height: 12),
                       const Text(
@@ -421,7 +425,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                   title: 'Punctuality',
                   description: 'Did the provider arrive on time?',
                   icon: Icons.access_time,
-                  color: Colors.green,
+                  color: AppTheme.success,
                   rating: _punctualityRating,
                   onRatingChanged: (rating) {
                     setState(() {
@@ -434,7 +438,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                   title: 'Work Quality',
                   description: 'How satisfied are you with the quality of work?',
                   icon: Icons.work_outline,
-                  color: Colors.blue,
+                  color: AppTheme.primary,
                   rating: _workQualityRating,
                   onRatingChanged: (rating) {
                     setState(() {
@@ -447,7 +451,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                   title: 'Speed and Efficiency',
                   description: 'How efficiently was the service completed?',
                   icon: Icons.speed,
-                  color: Colors.orange,
+                  color: AppTheme.warning,
                   rating: _speedEfficiencyRating,
                   onRatingChanged: (rating) {
                     setState(() {
@@ -523,7 +527,7 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.blue[600]!),
+                              borderSide: BorderSide(color: AppTheme.primary),
                             ),
                             contentPadding: const EdgeInsets.all(16),
                           ),
@@ -544,13 +548,13 @@ class _MultiCriteriaRatingScreenState extends State<MultiCriteriaRatingScreen>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
-                      colors: [Colors.blue[600]!, Colors.blue[700]!],
+                      colors: [AppTheme.primary, AppTheme.secondary],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: AppTheme.primary.withOpacity(0.3),
                         spreadRadius: 1,
                         blurRadius: 10,
                         offset: const Offset(0, 4),

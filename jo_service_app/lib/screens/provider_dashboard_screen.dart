@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/theme_service.dart';
@@ -311,7 +312,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
             ],
           ),
           backgroundColor: newAvailability 
-            ? const Color(0xFF34C759) 
+            ? AppTheme.primary 
             : const Color(0xFFFF9500),
           duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
@@ -382,7 +383,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               ),
             ],
           ),
-          backgroundColor: const Color(0xFF34C759),
+          backgroundColor: AppTheme.primary,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -461,7 +462,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                                 height: 8,
                                 margin: const EdgeInsets.only(right: 8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF34C759),
+                                  color: AppTheme.primary,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: TweenAnimationBuilder<double>(
@@ -565,9 +566,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  const Icon(Icons.delete_forever_rounded, size: 20, color: Colors.red),
+                                  const Icon(Icons.delete_forever_rounded, size: 20, color: AppTheme.danger),
                                   const SizedBox(width: 12),
-                                  Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
+                                  Text(l10n.deleteAccount, style: const TextStyle(color: AppTheme.danger)),
                                 ],
                               ),
                             ),
@@ -606,7 +607,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: _isProviderAvailable 
-                                      ? [const Color(0xFF007AFF), const Color(0xFF5856D6)]
+                                      ? [AppTheme.primary, AppTheme.secondary]
                                       : [const Color(0xFF8E8E93), const Color(0xFF6D6D70)],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -655,12 +656,12 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: _isProviderAvailable 
-                                ? const Color(0xFF34C759).withOpacity(0.1)
+                                ? AppTheme.primary.withOpacity(0.1)
                                 : const Color(0xFFFF9500).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: _isProviderAvailable 
-                                  ? const Color(0xFF34C759).withOpacity(0.3)
+                                  ? AppTheme.primary.withOpacity(0.3)
                                   : const Color(0xFFFF9500).withOpacity(0.3),
                                 width: 1,
                               ),
@@ -672,7 +673,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                                   height: 40,
                                   decoration: BoxDecoration(
                                     color: _isProviderAvailable 
-                                      ? const Color(0xFF34C759)
+                                      ? AppTheme.primary
                                       : const Color(0xFFFF9500),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -719,7 +720,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                                     onChanged: _isUpdatingAvailability 
                                       ? null 
                                       : (value) => _updateProviderAvailability(value),
-                                    activeColor: const Color(0xFF34C759),
+                                    activeColor: AppTheme.primary,
                                     inactiveThumbColor: const Color(0xFFFF9500),
                                     inactiveTrackColor: const Color(0xFFFF9500).withOpacity(0.3),
                                   ),
@@ -732,7 +733,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF007AFF)),
+                                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
                                       ),
                                     ),
                                   ),
@@ -756,7 +757,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                               l10n.pending,
                                                               l10n.bookings,
                               Icons.schedule_rounded,
-                              const Color(0xFF34C759),
+                              AppTheme.primary,
                               isDark,
                               _isLoadingStats ? '...' : _activeBookings.toString(),
                             ),
@@ -768,7 +769,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                               l10n.completed,
                               l10n.completedThisMonth,
                               Icons.check_circle_rounded,
-                              const Color(0xFF007AFF),
+                              AppTheme.primary,
                               isDark,
                               _isLoadingStats ? '...' : _completedThisMonth.toString(),
                             ),
@@ -789,7 +790,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                             l10n.manageProfile,
                                                           l10n.updateServicesRates,
                             Icons.person_outline_rounded,
-                            const Color(0xFF007AFF),
+                            AppTheme.primary,
                             () => _navigateToProfile(context),
                             isDark,
                           ),
@@ -799,7 +800,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
                             l10n.manageBookings,
                                                           l10n.viewRespondBookings,
                             Icons.calendar_today_rounded,
-                            const Color(0xFF34C759),
+                            AppTheme.primary,
                             () => _navigateToBookings(context),
                             isDark,
                           ),
@@ -1078,7 +1079,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               child: Text(
                 l10n.cancel,
                 style: const TextStyle(
-                  color: Color(0xFF007AFF),
+                  color: AppTheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1138,19 +1139,19 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: AppTheme.danger.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning, color: Colors.red, size: 20),
+                    const Icon(Icons.warning, color: AppTheme.danger, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         l10n.deleteAccountWarning,
                         style: const TextStyle(
-                          color: Colors.red,
+                          color: AppTheme.danger,
                           fontSize: 12,
                         ),
                       ),
@@ -1166,7 +1167,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
               child: Text(
                 l10n.cancel,
                 style: const TextStyle(
-                  color: Color(0xFF007AFF),
+                  color: AppTheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1219,7 +1220,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.accountDeleted),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.primary,
           ),
         );
         
@@ -1238,7 +1239,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${l10n.failedToDeleteAccount}: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../constants/theme.dart';
 import '../models/provider_model.dart';
 import '../widgets/location_picker.dart';
 
@@ -289,7 +290,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.profilePictureUploadedSuccessfully),
-            backgroundColor: const Color(0xFF34C759),
+            backgroundColor: AppTheme.primary,
           ),
         );
       }
@@ -410,7 +411,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(successMessage),
-          backgroundColor: const Color(0xFF34C759),
+          backgroundColor: AppTheme.primary,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -500,14 +501,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF34C759).withOpacity(0.1),
+                              color: AppTheme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
                               '✅ Location will be saved when you tap "Save Changes"',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF34C759),
+                                color: AppTheme.primary,
                               ),
                             ),
                           ),
@@ -552,14 +553,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF34C759).withOpacity(0.1),
+                  color: AppTheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
                   '✅ GPS coordinates are saved and will be used for distance calculations',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF34C759),
+                    color: AppTheme.primary,
                   ),
                 ),
               ),
@@ -615,7 +616,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF007AFF)),
+              leading: const Icon(Icons.photo_library, color: AppTheme.primary),
               title: Text(l10n.chooseFromGallery),
               onTap: () {
                 Navigator.pop(context);
@@ -623,7 +624,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF007AFF)),
+              leading: const Icon(Icons.camera_alt, color: AppTheme.primary),
               title: Text(l10n.takePhoto),
               onTap: () {
                 Navigator.pop(context);
@@ -652,7 +653,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF007AFF),
+                      color: AppTheme.primary,
                     ),
                   )
                 : Column(
@@ -699,7 +700,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Color(0xFF007AFF),
+                                  color: AppTheme.primary,
                                 ),
                               )
                             else
@@ -708,7 +709,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                 child: Text(
                                   'Save',
                                   style: TextStyle(
-                                    color: const Color(0xFF007AFF),
+                                    color: AppTheme.primary,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -780,7 +781,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                                           return Container(
                                                             decoration: BoxDecoration(
                                                               gradient: const LinearGradient(
-                                                                colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                                                                colors: [AppTheme.primary, AppTheme.secondary],
                                                                 begin: Alignment.topLeft,
                                                                 end: Alignment.bottomRight,
                                                               ),
@@ -797,7 +798,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                                     : Container(
                                                         decoration: BoxDecoration(
                                                           gradient: const LinearGradient(
-                                                            colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                                                            colors: [AppTheme.primary, AppTheme.secondary],
                                                             begin: Alignment.topLeft,
                                                             end: Alignment.bottomRight,
                                                           ),
@@ -819,11 +820,11 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                             width: 36,
                                             height: 36,
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF007AFF),
+                                              color: AppTheme.primary,
                                               borderRadius: BorderRadius.circular(18),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: const Color(0xFF007AFF).withOpacity(0.3),
+                                                  color: AppTheme.primary.withOpacity(0.3),
                                                   blurRadius: 10,
                                                   offset: const Offset(0, 4),
                                                 ),
@@ -870,14 +871,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                         height: 44,
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
-                                            colors: [Color(0xFF34C759), Color(0xFF30D158)],
+                                            colors: [AppTheme.primary, AppTheme.accent],
                                             begin: Alignment.centerLeft,
                                             end: Alignment.centerRight,
                                           ),
                                           borderRadius: BorderRadius.circular(12),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFF34C759).withOpacity(0.3),
+                                              color: AppTheme.primary.withOpacity(0.3),
                                               blurRadius: 10,
                                               offset: const Offset(0, 4),
                                             ),
@@ -1065,14 +1066,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                                         Icon(
                                                           Icons.location_on,
                                                           size: 12,
-                                                          color: const Color(0xFF34C759),
+                                                          color: AppTheme.primary,
                                                         ),
                                                         const SizedBox(width: 4),
                                                         Text(
                                                           'GPS: ${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
                                                           style: TextStyle(
                                                             fontSize: 12,
-                                                            color: const Color(0xFF34C759),
+                                                            color: AppTheme.primary,
                                                             fontWeight: FontWeight.w500,
                                                           ),
                                                         ),
@@ -1087,13 +1088,13 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                               IconButton(
                                                 icon: const Icon(Icons.map_rounded),
                                                 onPressed: _showLocationPicker,
-                                                color: const Color(0xFF007AFF),
+                                                color: AppTheme.primary,
                                               ),
                                               if (_latitude != null && _longitude != null)
                                                 IconButton(
                                                   icon: const Icon(Icons.info_outline),
                                                   onPressed: () => _showLocationInfo(),
-                                                  color: const Color(0xFF34C759),
+                                                  color: AppTheme.primary,
                                                   tooltip: 'Location Info',
                                                 ),
                                             ],
@@ -1113,14 +1114,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                 height: 56,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+                                    colors: [AppTheme.primary, AppTheme.secondary],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF007AFF).withOpacity(0.3),
+                                      color: AppTheme.primary.withOpacity(0.3),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
                                     ),
@@ -1226,7 +1227,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
-              color: Color(0xFF007AFF),
+              color: AppTheme.primary,
               width: 2,
             ),
           ),

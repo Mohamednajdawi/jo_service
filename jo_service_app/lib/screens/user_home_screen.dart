@@ -306,12 +306,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             const SizedBox(width: 8),
           ],
           flexibleSpace: FlexibleSpaceBar(
-            title: Text(
-                                  l10n.jordanServiceProvider,
-              style: TextStyle(
-                color: isDark ? AppTheme.white : AppTheme.black,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+            title: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  color: isDark ? AppTheme.white : AppTheme.black,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  height: 1.2,
+                ),
+                children: [
+                  TextSpan(text: '${l10n.appTitle}\n'),
+                  TextSpan(
+                    text: l10n.appBrandSubtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.8),
+                    ),
+                  ),
+                ],
               ),
             ),
             background: Container(
