@@ -119,6 +119,22 @@ class _MyAppState extends State<MyApp> {
             initialRoute: AuthCheckScreen.routeName,
             home: const UserLoginScreen(),
           onGenerateRoute: (settings) {
+            // Handle verify-email route from email link
+            if (settings.name?.startsWith('/verify-email') == true) {
+              final uri = Uri.parse(settings.name!);
+              final token = uri.queryParameters['token'];
+              if (token != null) {
+                return MaterialPageRoute(
+                  builder: (_) => UserVerificationScreen(
+                    emailVerificationToken: token,
+                    userId: null,
+                    isEmailVerification: true,
+                    userEmail: null,
+                  ),
+                );
+              }
+            }
+            
             switch (settings.name) {
               // Home route
               case '/':

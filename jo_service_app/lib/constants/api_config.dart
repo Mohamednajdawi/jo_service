@@ -1,12 +1,12 @@
 class ApiConfig {
-  // Production backend URL - Update this to your Railway backend URL
-  static const String productionBaseUrl = 'https://joservice-backend.up.railway.app';
+  // Production backend URL - Railway deployment
+  static const String productionBaseUrl = 'https://joservice-production.up.railway.app';
 
   // API endpoints
   static const String apiBaseUrl = '$productionBaseUrl/api';
 
   // WebSocket endpoints
-  static const String wsBaseUrl = 'wss://joservice-backend.up.railway.app';
+  static const String wsBaseUrl = 'wss://joservice-production.up.railway.app';
 
   // File uploads
   static const String uploadsBaseUrl = '$productionBaseUrl/uploads';
@@ -15,7 +15,7 @@ class ApiConfig {
   static const String profilePicturesBaseUrl = '$productionBaseUrl/uploads/profile-pictures';
 
   // Development backend URL (local)
-  static const String developmentBaseUrl = 'http://10.46.6.68:3001/api';
+  static const String developmentBaseUrl = 'http://localhost:3000/api';
 
   // Check if we're in production mode
   static bool get isProduction => true;

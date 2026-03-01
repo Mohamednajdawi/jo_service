@@ -66,7 +66,9 @@ class VerificationService {
     async sendEmailVerification(email, fullName, token) {
         try {
             if (this.resend) {
-                const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+                // Remove trailing slash from FRONTEND_URL to avoid double slashes
+                const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+                const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
                 const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
                 
                 const { data, error } = await this.resend.emails.send({
@@ -100,9 +102,10 @@ class VerificationService {
                 return true;
             } else {
                 // Mock email for development
+                const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
                 console.log('📧 [MOCK] Email verification sent to:', email);
                 console.log('📧 [MOCK] Verification token:', token);
-                console.log('📧 [MOCK] Verification URL:', `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`);
+                console.log('📧 [MOCK] Verification URL:', `${baseUrl}/verify-email?token=${token}`);
                 console.log('📧 [MOCK] In production, this would be sent via Resend');
                 return true;
             }
