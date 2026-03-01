@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const User = require('../models/user.model');
 const Provider = require('../models/provider.model');
 const { generateToken } = require('../utils/jwt.utils');
@@ -21,13 +20,26 @@ function normalizeExtendedJsonDates(obj) {
     return obj;
 }
 
+// Turn any id (ObjectId, string, { $oid }) into a string for JWT and responses
+function idToString(v) {
+    if (v == null) return null;
+    if (typeof v === 'string') return v.trim() || null;
+    if (typeof v === 'object') {
+        if (typeof v.toHexString === 'function') return v.toHexString();
+        if (v.oid != null) return String(v.oid).trim();
+        if (v['$oid'] != null) return String(v['$oid']).trim();
+    }
+    const s = String(v).trim();
+    return s && s !== '[object Object]' ? s : null;
+}
+
 // Helper function to safely extract user/provider data for response
 const getUserResponse = (user) => {
     if (!user) return null;
     const u = user.toObject ? user.toObject() : user;
     const normalized = normalizeExtendedJsonDates(u);
     return {
-        _id: normalized._id,
+        _id: idToString(normalized._id) ?? normalized._id,
         email: normalized.email,
         fullName: normalized.fullName,
         phoneNumber: normalized.phoneNumber,
@@ -478,30 +490,17 @@ const AuthController = {
                 user = normalizeExtendedJsonDates(updatedRaw);
             }
 
-            // Generate JWT token (id must be a string for /users/me)
-            const rawId = user._id || user.id;
-            let userId = null;
-            if (rawId != null) {
-                try {
-                    if (typeof rawId === 'string') {
-                        userId = rawId.trim();
-                    } else {
-                        const oid = new mongoose.Types.ObjectId(rawId);
-                        userId = oid.toString();
-                    }
-                } catch (_) {
-                    const s = String(rawId);
-                    if (s && s !== '[object Object]') userId = s.trim();
-                }
+            // Build response first so we have a normalized user object
+            const userForResponse = user && user.toObject ? user : user;
+            const userResponse = getUserResponse(userForResponse);
+            let userId = idToString(user._id || user.id);
+            if (!userId && userResponse && userResponse._id) {
+                userId = typeof userResponse._id === 'string' ? userResponse._id : idToString(userResponse._id);
             }
-            if (!userId || userId === '[object Object]') {
+            if (!userId) {
                 return res.status(500).json({ message: 'Unable to create session. Please try again.' });
             }
             const token = generateToken({ id: userId, type: 'user' });
-
-            // Return user data and token (getUserResponse accepts doc or plain object)
-            const userForResponse = user && user.toObject ? user : user;
-            const userResponse = getUserResponse(userForResponse);
             res.status(200).json({
                 message: `${provider.charAt(0).toUpperCase() + provider.slice(1)} login successful`,
                 user: userResponse,
