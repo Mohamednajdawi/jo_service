@@ -254,6 +254,9 @@ abstract class AppLocalizations {
   /// **'Bookings'**
   String get bookings;
 
+  /// Short label for Services tab in bottom nav.
+  String get navServices;
+
   /// No description provided for @messages.
   ///
   /// In en, this message translates to:
@@ -295,6 +298,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nearby Providers'**
   String get nearbyProviders;
+
+  /// No description provided for @withinTenKm.
+  String get withinTenKm;
+
+  /// No description provided for @locationPermissionDenied.
+  String get locationPermissionDenied;
 
   /// No description provided for @topRated.
   ///

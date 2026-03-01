@@ -10,6 +10,7 @@ import './provider_detail_screen.dart';
 import './advanced_search_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
+import '../services/location_service.dart';
 import 'dart:convert';
 
 class ProviderListScreen extends StatefulWidget {
@@ -34,56 +35,28 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   final int _limit = 10;
   bool _isLoadingPage = false;
   String _searchQuery = '';
-  String _selectedCategory = 'All';
+  String _selectedCategory = '';
   String _selectedLocation = '';
   double? _selectedLatitude;
   double? _selectedLongitude;
   double _minRating = 0.0;
   double _maxPrice = 1000.0;
   double _maxDistance = 50.0;
+  bool _filterWithin10km = false;
   bool _onlyAvailable = false;
   List<String> _selectedTags = [];
   String _sortBy = 'rating';
   String _sortOrder = 'desc';
 
-  List<Map<String, dynamic>> _getCategories(BuildContext context) {
+  List<Map<String, dynamic>> _getServiceCategories(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return [
-      {
-        'name': 'All',
-        'displayName': l10n.all,
-        'icon': Icons.grid_view_rounded,
-      },
-      {
-        'name': 'Plumbing',
-        'displayName': l10n.plumbing,
-        'icon': Icons.plumbing,
-      },
-      {
-        'name': 'Electrical',
-        'displayName': l10n.electrical,
-        'icon': Icons.electrical_services,
-      },
-      {
-        'name': 'Cleaning',
-        'displayName': l10n.cleaning,
-        'icon': Icons.cleaning_services,
-      },
-      {
-        'name': 'Gardening',
-        'displayName': l10n.gardening,
-        'icon': Icons.yard,
-      },
-      {
-        'name': 'Painting',
-        'displayName': l10n.painting,
-        'icon': Icons.format_paint,
-      },
-      {
-        'name': 'Carpentry',
-        'displayName': l10n.carpentry,
-        'icon': Icons.handyman,
-      },
+      {'name': 'Plumbing', 'displayName': l10n.plumbing, 'icon': Icons.plumbing},
+      {'name': 'Electrical', 'displayName': l10n.electrical, 'icon': Icons.electrical_services},
+      {'name': 'Cleaning', 'displayName': l10n.cleaning, 'icon': Icons.cleaning_services},
+      {'name': 'Gardening', 'displayName': l10n.gardening, 'icon': Icons.yard},
+      {'name': 'Painting', 'displayName': l10n.painting, 'icon': Icons.format_paint},
+      {'name': 'Carpentry', 'displayName': l10n.carpentry, 'icon': Icons.handyman},
     ];
   }
 
@@ -113,9 +86,10 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       _isLoadingPage = true;
     });
 
+    final fetchLimit = _selectedCategory.isNotEmpty ? 50 : _limit;
     final queryParams = {
       'page': _currentPage.toString(),
-      'limit': _limit.toString(),
+      'limit': fetchLimit.toString(),
     };
 
     // Handle search queries
@@ -130,34 +104,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       }
     }
 
-    // Skip backend category filtering for now - we'll do it client-side
-    // This ensures we get all providers and can filter them properly
-    // Add category filter if not "All"
-    // if (_selectedCategory != 'All') {
-    //   // Try multiple variations of the service type for backend compatibility
-    //   String categoryParam = _selectedCategory;
-    //   switch (_selectedCategory) {
-    //     case 'Electrical':
-    //       categoryParam = 'Electrician';
-    //       break;
-    //     case 'Plumbing':
-    //       categoryParam = 'Plumber';
-    //       break;
-    //     case 'Cleaning':
-    //       categoryParam = 'Cleaner';
-    //       break;
-    //     case 'Gardening':
-    //       categoryParam = 'Gardener';
-    //       break;
-    //     case 'Painting':
-    //       categoryParam = 'Painter';
-    //       break;
-    //     case 'Carpentry':
-    //       categoryParam = 'Carpenter';
-    //       break;
-    //   }
-    //   queryParams['serviceType'] = categoryParam;
-    // }
+    // Don't send category to API - we filter client-side (backend search has issues)
 
     // Add location filter if specified
     if (_selectedLocation.isNotEmpty) {
@@ -187,10 +134,9 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     print('   Max Distance: $_maxDistance');
     print('   Query Params: $queryParams');
     
-    // Use fetchProviders for initial load, searchProviders only when there are search parameters
+    // Use fetchProviders (works) - category is filtered client-side
     final hasSearchParams = queryParams.length > 2 || // More than just page and limit
         _searchQuery.isNotEmpty ||
-        _selectedCategory != 'All' ||
         _selectedLocation.isNotEmpty ||
         _onlyAvailable ||
         _minRating > 0.0 ||
@@ -242,7 +188,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       // Apply additional advanced filters
       if (filteredProviders.isNotEmpty) {
         // Apply category filtering (client-side as fallback)
-        if (_selectedCategory != 'All') {
+        if (_selectedCategory.isNotEmpty) {
           filteredProviders = filteredProviders.where((provider) {
             final serviceType = (provider.serviceType ?? '').toLowerCase();
             
@@ -394,7 +340,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     final trimmedQuery = query.trim();
 
     // If a category filter is already active, and we're now adding a text search
-    if (_selectedCategory != 'All' &&
+    if (_selectedCategory.isNotEmpty &&
         trimmedQuery.isNotEmpty &&
         !trimmedQuery.startsWith('Category: ')) {
       // Keep both filters - category stays as is, and add text search
@@ -411,7 +357,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
           String categoryName = trimmedQuery.substring('Category: '.length);
           // Find if this category exists in our list
           bool validCategory =
-              _getCategories(context).any((cat) => cat['name'] == categoryName);
+              _getServiceCategories(context).any((cat) => cat['name'] == categoryName);
           if (validCategory) {
             _selectedCategory = categoryName;
           }
@@ -424,13 +370,11 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
 
   void _selectCategory(String category) {
     setState(() {
-      _selectedCategory = category;
-
-      // If we're selecting a specific category, update the search UI to reflect that
-      if (category != 'All') {
-        _searchController.text = 'Category: $category';
-      } else if (_searchQuery.startsWith('Category: ')) {
-        // Clear the search box if we're deselecting a category filter
+      // Toggle: if same category tapped, clear selection
+      _selectedCategory = _selectedCategory == category ? '' : category;
+      if (_selectedCategory.isNotEmpty) {
+        _searchController.text = 'Category: $_selectedCategory';
+      } else {
         _searchController.text = '';
       }
     });
@@ -441,10 +385,11 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   void _clearFilters() {
     setState(() {
       _searchQuery = '';
-      _selectedCategory = 'All';
+      _selectedCategory = '';
       _selectedLocation = '';
       _selectedLatitude = null;
       _selectedLongitude = null;
+      _filterWithin10km = false;
       _minRating = 0.0;
       _maxPrice = 1000.0;
       _maxDistance = 50.0;
@@ -461,7 +406,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   void _applyAdvancedFilters(SearchFilters filters) {
     setState(() {
       _searchQuery = filters.searchQuery;
-      _selectedCategory = filters.selectedCategory;
+      _selectedCategory = filters.selectedCategory == 'All' ? '' : filters.selectedCategory;
       _selectedLocation = filters.selectedLocation;
       _selectedLatitude = filters.selectedLatitude;
       _selectedLongitude = filters.selectedLongitude;
@@ -483,8 +428,9 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   // Check if any filters are currently active
   bool _hasActiveFilters() {
     return _searchQuery.isNotEmpty ||
-           _selectedCategory != 'All' ||
+           _selectedCategory.isNotEmpty ||
            _selectedLocation.isNotEmpty ||
+           _filterWithin10km ||
            _minRating > 0.0 ||
            _maxPrice < 1000.0 ||
            _maxDistance < 50.0 ||
@@ -521,7 +467,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                   companyName: _searchQuery.isNotEmpty
                       ? 'Amer IT Solutions'
                       : 'ABC Company',
-                  serviceType: _selectedCategory != 'All'
+                  serviceType: _selectedCategory.isNotEmpty
                       ? _selectedCategory
                       : 'General Services',
                   hourlyRate: 75.0,
@@ -700,89 +646,116 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          _buildCategoryFilter(),
-          Expanded(
-            child: FutureBuilder<ProviderListResponse>(
-              future: _providersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        AppLocalizations.of(context)!.errorLoadingProvidersMessage(snapshot.error.toString()),
-                        textAlign: TextAlign.center,
-                        style: AppTheme.body3.copyWith(color: AppTheme.danger),
-                      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildSearchBar()),
+          SliverToBoxAdapter(child: _buildLocation10kmFilter()),
+          SliverToBoxAdapter(child: _buildServicesGrid()),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
+                _selectedCategory.isNotEmpty
+                    ? '${_getServiceCategories(context).firstWhere((c) => c['name'] == _selectedCategory, orElse: () => {'displayName': _selectedCategory})['displayName'] ?? _selectedCategory} ${AppLocalizations.of(context)!.serviceProviders}'
+                    : AppLocalizations.of(context)!.serviceProviders,
+                style: AppTheme.h3.copyWith(
+                  color: AppTheme.dark,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          FutureBuilder<ProviderListResponse>(
+            future: _providersFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 120,
+                    child: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+                  ),
+                );
+              }
+              if (snapshot.hasError) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      AppLocalizations.of(context)!.errorLoadingProvidersMessage(snapshot.error.toString()),
+                      textAlign: TextAlign.center,
+                      style: AppTheme.body3.copyWith(color: AppTheme.danger),
                     ),
-                  );
-                }
-                if (!snapshot.hasData || snapshot.data!.providers.isEmpty) {
-                  return Center(
+                  ),
+                );
+              }
+              if (!snapshot.hasData || snapshot.data!.providers.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.search_off, size: 64, color: AppTheme.grey),
-                        const SizedBox(height: 16),
+                        Icon(Icons.search_off, size: 48, color: AppTheme.grey),
+                        const SizedBox(height: 12),
                         Text(
                           AppLocalizations.of(context)!.noProvidersFound,
                           style: AppTheme.h3.copyWith(color: AppTheme.dark),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           _searchQuery.isNotEmpty
                               ? 'No results match "${_searchQuery}"'
-                              : _selectedCategory != 'All'
-                                  ? 'No providers in ${_selectedCategory} category'
+                              : _selectedCategory.isNotEmpty
+                                  ? 'No providers in $_selectedCategory category'
                                   : 'Add some via your API or try refreshing',
                           style: AppTheme.body3.copyWith(color: AppTheme.grey),
                           textAlign: TextAlign.center,
                         ),
                         if (_searchQuery.isNotEmpty ||
-                            _selectedCategory != 'All')
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: ElevatedButton.icon(
-                              icon: Icon(Icons.clear, color: AppTheme.white),
-                              label: Text('Clear Filters',
-                                  style: TextStyle(color: AppTheme.white)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primary,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(AppTheme.radius),
-                                ),
+                            _selectedCategory.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: _clearFilters,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppTheme.radius),
                               ),
-                              onPressed: _clearFilters,
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.clearFilters,
+                              style: TextStyle(color: AppTheme.white, fontSize: 14),
                             ),
                           ),
+                        ],
                       ],
                     ),
-                  );
-                }
-
-                final providerListResponse = snapshot.data!;
-                final providers = providerListResponse.providers;
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: providers.length,
-                  itemBuilder: (context, index) {
-                    final provider = providers[index];
-                    return _buildProviderCard(provider);
-                  },
+                  ),
                 );
-              },
-            ),
+              }
+
+              final providerListResponse = snapshot.data!;
+              final providers = providerListResponse.providers;
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: _buildProviderCard(providers[index]),
+                  ),
+                  childCount: providers.length,
+                ),
+              );
+            },
           ),
-          if (_totalProviders > 0) _buildPagination(),
+          if (_totalProviders > 0)
+            SliverToBoxAdapter(child: _buildPagination()),
         ],
       ),
     );
@@ -790,7 +763,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
       color: AppTheme.white,
       child: Column(
         children: [
@@ -851,9 +824,12 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                       Icon(Icons.location_on,
                           size: 16, color: AppTheme.primary),
                       const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context)!.cityLabel(_selectedLocation),
-                        style: TextStyle(color: AppTheme.primary),
+                      Flexible(
+                        child: Text(
+                          AppLocalizations.of(context)!.cityLabel(_selectedLocation),
+                          style: TextStyle(color: AppTheme.primary),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Icon(Icons.edit, size: 14, color: AppTheme.primary),
@@ -867,63 +843,124 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     );
   }
 
-  Widget _buildCategoryFilter() {
-    final categories = _getCategories(context);
+  Widget _buildLocation10kmFilter() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: AppTheme.white,
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = _selectedCategory == category['name'];
+      child: Wrap(
+        spacing: 8,
+        children: [
+          FilterChip(
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 18,
+                  color: _filterWithin10km ? AppTheme.white : AppTheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    l10n.withinTenKm,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+            selected: _filterWithin10km,
+            onSelected: (selected) async {
+              if (selected) {
+                final position = await LocationService.getCurrentLocation();
+                if (position != null && mounted) {
+                  setState(() {
+                    _filterWithin10km = true;
+                    _selectedLatitude = position.latitude;
+                    _selectedLongitude = position.longitude;
+                    _maxDistance = 10.0;
+                  });
+                  _loadProviders(resetPage: true);
+                } else if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.locationPermissionDenied),
+                    ),
+                  );
+                }
+              } else if (mounted) {
+                setState(() {
+                  _filterWithin10km = false;
+                  _selectedLatitude = null;
+                  _selectedLongitude = null;
+                  _maxDistance = 50.0;
+                });
+                _loadProviders(resetPage: true);
+              }
+            },
+            selectedColor: AppTheme.primary,
+            checkmarkColor: AppTheme.white,
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildServicesGrid() {
+    final categories = _getServiceCategories(context);
+    return Container(
+      color: AppTheme.white,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 2.2,
+        children: categories.map((category) {
+          final isSelected = _selectedCategory == category['name'];
           return GestureDetector(
             onTap: () => _selectCategory(category['name']),
             child: Container(
-              width: 80,
-              margin: const EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.primary.withOpacity(0.12) : AppTheme.light,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? AppTheme.primary : AppTheme.greyLight,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppTheme.primary : AppTheme.white,
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color:
-                            isSelected ? AppTheme.primary : AppTheme.greyLight,
-                      ),
-                      boxShadow: isSelected ? [AppTheme.lightShadow] : null,
-                    ),
-                    child: Icon(
-                      category['icon'],
-                      color: isSelected ? AppTheme.white : AppTheme.grey,
-                      size: 24,
-                    ),
+                  Icon(
+                    category['icon'] as IconData,
+                    color: isSelected ? AppTheme.primary : AppTheme.grey,
+                    size: 24,
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    category['displayName'] ?? category['name'],
-                    style: TextStyle(
-                      color: isSelected ? AppTheme.primary : AppTheme.grey,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 12,
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      category['displayName'] ?? category['name'],
+                      style: TextStyle(
+                        color: isSelected ? AppTheme.primary : AppTheme.dark,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }

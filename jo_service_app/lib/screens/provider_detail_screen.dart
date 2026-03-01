@@ -4,10 +4,12 @@ import '../models/provider_model.dart';
 import '../models/chat_conversation.dart';
 import 'package:provider/provider.dart' as ctx; // Alias for provider package
 import '../services/auth_service.dart'; // To get token for API calls
+import '../services/conversation_service.dart';
 import './chat_screen.dart'; // For chat navigation
 import './create_booking_screen.dart'; // For booking navigation
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
+import '../constants/theme.dart';
 
 class ProviderDetailScreen extends StatefulWidget {
   static const routeName = '/provider-detail';
@@ -99,29 +101,7 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Center(
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primaryContainer,
-                    backgroundImage: provider.profilePictureUrl != null &&
-                            provider.profilePictureUrl!.isNotEmpty &&
-                            provider.profilePictureUrl!.startsWith('http')
-                        ? NetworkImage(provider.profilePictureUrl!)
-                        : const AssetImage('assets/default_user.png') as ImageProvider,
-                    child: (provider.profilePictureUrl == null ||
-                            provider.profilePictureUrl!.isEmpty)
-                        ? Text(
-                            provider.fullName?.isNotEmpty == true
-                                ? provider.fullName![0].toUpperCase()
-                                : 'P',
-                            style: TextStyle(
-                                fontSize: 40,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onPrimaryContainer,
-                                fontWeight: FontWeight.bold))
-                        : null,
-                  ),
+                  child: _buildProviderAvatar(context, provider),
                 ),
                 const SizedBox(height: 16.0),
                 Center(
@@ -238,6 +218,62 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  String _getInitials(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) return '?';
+    final trimmed = fullName.trim();
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return trimmed.length >= 2
+        ? trimmed.substring(0, 2).toUpperCase()
+        : trimmed[0].toUpperCase();
+  }
+
+  Widget _buildProviderAvatar(BuildContext context, Provider provider) {
+    final hasImage = provider.profilePictureUrl != null &&
+        provider.profilePictureUrl!.trim().isNotEmpty;
+    final imageUrl = hasImage && !provider.profilePictureUrl!.startsWith('http')
+        ? '${ConversationService.baseImageUrl}/${provider.profilePictureUrl!.replaceFirst(RegExp(r'^/'), '')}'
+        : provider.profilePictureUrl;
+
+    if (hasImage && imageUrl != null) {
+      return ClipOval(
+        child: SizedBox(
+          width: 100,
+          height: 100,
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildInitialsPlaceholder(provider),
+          ),
+        ),
+      );
+    }
+    return _buildInitialsPlaceholder(provider);
+  }
+
+  Widget _buildInitialsPlaceholder(Provider provider) {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          _getInitials(provider.fullName),
+          style: TextStyle(
+            color: AppTheme.primary,
+            fontSize: 40,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

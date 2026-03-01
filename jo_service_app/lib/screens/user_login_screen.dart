@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -302,19 +303,15 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                     children: [
                       const SizedBox(height: 48),
                       
-                      // Brand hero - App name with premium typography
-                      Text(
-                        l10n.appTitle,
-                        style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -1.5,
-                          color: isDark ? Colors.white : const Color(0xFF000000),
-                          height: 1.0,
+                      // Brand hero - App logo
+                      Center(
+                        child: SvgPicture.asset(
+                          'assets/jo_logo.svg',
+                          width: 88,
+                          height: 88,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
                         l10n.appTagline,
                         style: TextStyle(

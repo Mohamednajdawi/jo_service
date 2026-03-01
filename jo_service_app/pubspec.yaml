@@ -37,6 +37,7 @@ dependencies:
   web_socket_channel: ^2.4.0
   provider: ^6.0.0
   image_picker: ^1.0.4
+  flutter_svg: ^2.0.10+1
   intl: ^0.19.0
   lottie: ^2.7.0
   google_maps_flutter: ^2.5.3
@@ -68,6 +69,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.14.3
+
+# App launcher icon (generated from assets/jo_logo.svg)
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/jo_logo_icon.png"
+  remove_alpha_ios: true  # App Store requires no alpha on app icons
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

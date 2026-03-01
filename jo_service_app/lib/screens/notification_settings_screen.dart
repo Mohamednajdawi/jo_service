@@ -97,35 +97,6 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     }
   }
 
-  Future<void> _sendTestNotification() async {
-    try {
-      // Show a local test notification
-      await _notificationService.showLocalNotification(
-        title: 'Test Notification',
-        body: 'This is a test notification from JO',
-        data: {'type': 'test', 'timestamp': DateTime.now().toIso8601String()},
-      );
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.testNotificationSent),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorSendingTestNotification),
-            backgroundColor: AppTheme.danger,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -235,19 +206,6 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                               ),
                             )
                           : Text(l10n.saveSettings),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Test Notification Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: _sendTestNotification,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(l10n.sendTestNotification),
                     ),
                   ),
                   const SizedBox(height: 24),

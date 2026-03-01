@@ -1,6 +1,28 @@
 const Provider = require('../models/provider.model');
 const mongoose = require('mongoose');
 
+// Maps category names to { regex for serviceType, serviceCategory enum value }
+function getCategorySearchParams(category) {
+    const c = (category || '').toLowerCase();
+    const mapping = {
+        plumber: { regex: 'plumb|plumbing|pipe|water', enum: 'plumbing' },
+        plumbing: { regex: 'plumb|plumbing|pipe|water', enum: 'plumbing' },
+        electrician: { regex: 'electric|wiring|power', enum: 'electrical' },
+        electrical: { regex: 'electric|wiring|power', enum: 'electrical' },
+        cleaner: { regex: 'clean|housekeep|maid', enum: 'cleaning' },
+        cleaning: { regex: 'clean|housekeep|maid', enum: 'cleaning' },
+        gardener: { regex: 'garden|landscap|plant', enum: 'gardening' },
+        gardening: { regex: 'garden|landscap|plant', enum: 'gardening' },
+        painter: { regex: 'paint|decor|wall', enum: null },
+        painting: { regex: 'paint|decor|wall', enum: null },
+        carpenter: { regex: 'carpen|wood|furniture', enum: null },
+        carpentry: { regex: 'carpen|wood|furniture', enum: null }
+    };
+    const params = mapping[c];
+    if (params) return params;
+    return { regex: category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), enum: null };
+}
+
 const ProviderController = {
 
     // GET /api/providers - Get list of providers with filtering and pagination
@@ -331,7 +353,8 @@ const ProviderController = {
         try {
             const {
                 query,             // Text search query
-                category,          // Service category
+                category,          // Service category (preferred)
+                serviceType,       // Alias for category - used by some clients
                 location,          // Location filter
                 minRating,         // Minimum rating
                 maxPrice,          // Maximum hourly rate
@@ -349,8 +372,7 @@ const ProviderController = {
             // Build the query object
             const queryObj = {};
             
-            // Only include active and verified providers
-            queryObj.accountStatus = 'active';
+            // Only include verified providers (match getAllProviders - no accountStatus filter)
             queryObj.verificationStatus = 'verified';
             
             console.log('🔍 Search parameters:', {
@@ -371,9 +393,17 @@ const ProviderController = {
                 }
             }
             
-            // Filter by category/service type
-            if (category && category !== 'All') {
-                queryObj.serviceType = { $regex: new RegExp(`^${category}$`, 'i') };
+            // Filter by category/service type - match serviceType OR serviceCategory (enum)
+            const categoryParam = category || serviceType;
+            if (categoryParam && categoryParam !== 'All') {
+                const { regex, enum: enumVal } = getCategorySearchParams(categoryParam);
+                const typeMatch = { serviceType: { $regex: new RegExp(regex, 'i') } };
+                if (enumVal) {
+                    queryObj.$or = queryObj.$or || [];
+                    queryObj.$or.push(typeMatch, { serviceCategory: enumVal });
+                } else {
+                    queryObj.serviceType = typeMatch.serviceType;
+                }
             }
             
             // Filter by location with improved text matching

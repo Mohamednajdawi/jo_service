@@ -123,15 +123,6 @@ class LocalNotificationService {
     print('Navigate to screen based on notification data: $data');
   }
 
-  Future<void> sendTestNotification() async {
-    try {
-      await _apiService.post('/notifications/test', {});
-      print('Test notification sent successfully');
-    } catch (error) {
-      print('Error sending test notification: $error');
-    }
-  }
-
   Future<Map<String, dynamic>?> getNotificationSettings() async {
     try {
       final response = await _apiService.get('/notifications/settings');

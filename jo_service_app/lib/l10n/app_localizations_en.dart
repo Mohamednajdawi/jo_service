@@ -88,6 +88,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bookings => 'Bookings';
 
   @override
+  String get navServices => 'Services';
+
+  @override
   String get messages => 'Messages';
 
   @override
@@ -107,6 +110,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nearbyProviders => 'Nearby Providers';
+
+  @override
+  String get withinTenKm => 'Within 10 km';
+
+  @override
+  String get locationPermissionDenied =>
+      'Location permission is required to filter by distance';
 
   @override
   String get topRated => 'Top Rated';

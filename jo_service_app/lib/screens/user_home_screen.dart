@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as ctxProvider;
+import 'package:flutter_svg/flutter_svg.dart';
 import '../l10n/app_localizations.dart';
 import '../models/provider_model.dart';
 import '../models/booking_model.dart';
@@ -9,9 +10,12 @@ import 'user_bookings_screen.dart';
 import 'user_profile_screen.dart';
 import 'favorites_screen.dart';
 import 'user_chats_screen.dart';
+import 'booking_detail_screen.dart';
+import 'provider_detail_screen.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
+import '../services/conversation_service.dart';
 import 'package:provider/provider.dart' as provider; // Import provider package
 
 class UserHomeScreen extends StatefulWidget {
@@ -34,7 +38,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   
   // Real data state variables
   List<Provider> _recentProviders = [];
+  final Map<String, String> _providerToBookingId = {};
   int _activeBookingsCount = 0;
+  Booking? _nextUpcomingBooking;
   bool _isLoadingActivity = false;
 
   @override
@@ -83,22 +89,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         final bookings = bookingsData.cast<Booking>();
         print('🔍 DEBUG: Parsed bookings count: ${bookings.length}');
         
-        // Extract unique providers from recent bookings
-        final providerIds = bookings
-            .where((booking) => booking.provider?.id != null)
-            .map((booking) => booking.provider!.id!)
-            .toSet()
-            .toList();
+        // Map providerId -> most recent bookingId (bookings are typically newest first)
+        final providerToBooking = <String, String>{};
+        for (final booking in bookings) {
+          final pid = booking.provider?.id;
+          if (pid != null && !providerToBooking.containsKey(pid)) {
+            providerToBooking[pid] = booking.id;
+          }
+        }
+        final providerIds = providerToBooking.keys.take(5).toList();
         
         print('🔍 DEBUG: Provider IDs found: $providerIds');
         
         // Fetch provider details for recent providers
         List<Provider> providers = [];
-        for (String providerId in providerIds.take(5)) {
+        final providerBookingMap = <String, String>{};
+        for (String providerId in providerIds) {
           try {
-            final provider = await _apiService.fetchProviderById(providerId, token);
-            if (provider != null) {
-              providers.add(provider);
+            final p = await _apiService.fetchProviderById(providerId, token);
+            if (p != null) {
+              providers.add(p);
+              providerBookingMap[providerId] = providerToBooking[providerId]!;
             }
           } catch (e) {
             print('Error fetching provider $providerId: $e');
@@ -107,6 +118,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         
         setState(() {
           _recentProviders = providers;
+          _providerToBookingId.clear();
+          _providerToBookingId.addAll(providerBookingMap);
         });
       }
     } catch (e) {
@@ -145,10 +158,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           booking.status == 'in_progress'
         ).length;
         
+        // Next upcoming booking (future date, active status)
+        final now = DateTime.now();
+        final upcoming = bookings
+            .where((b) => (b.status == 'pending' || b.status == 'accepted' || b.status == 'in_progress') && 
+                b.serviceDateTime.isAfter(now))
+            .toList()
+          ..sort((a, b) => a.serviceDateTime.compareTo(b.serviceDateTime));
+        
         print('📊 DEBUG: Active bookings count: $activeBookings');
         
         setState(() {
           _activeBookingsCount = activeBookings;
+          _nextUpcomingBooking = upcoming.isNotEmpty ? upcoming.first : null;
         });
       }
     } catch (e) {
@@ -207,6 +229,52 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       default:
         return serviceType; // Return original if no translation found
     }
+  }
+
+  IconData _getServiceIcon(String? serviceType) {
+    if (serviceType == null) return Icons.home_repair_service_outlined;
+    switch (serviceType.toLowerCase()) {
+      case 'plumber':
+      case 'plumbing':
+        return Icons.plumbing;
+      case 'electrician':
+      case 'electrical':
+        return Icons.electrical_services;
+      case 'painter':
+      case 'painting':
+        return Icons.format_paint;
+      case 'cleaner':
+      case 'cleaning':
+        return Icons.cleaning_services;
+      case 'carpenter':
+      case 'carpentry':
+        return Icons.handyman;
+      case 'gardener':
+      case 'gardening':
+        return Icons.yard;
+      case 'mechanic':
+        return Icons.build;
+      case 'air conditioning technician':
+      case 'airconditioning':
+        return Icons.ac_unit;
+      case 'general maintenance':
+      case 'maintenance':
+        return Icons.home_repair_service_outlined;
+      case 'housekeeper':
+        return Icons.cleaning_services;
+      default:
+        return Icons.home_repair_service_outlined;
+    }
+  }
+
+  String _getInitials(String? fullName) {
+    if (fullName == null || fullName.trim().isEmpty) return '?';
+    final trimmed = fullName.trim();
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return trimmed.length >= 2 ? trimmed.substring(0, 2).toUpperCase() : trimmed[0].toUpperCase();
   }
 
 
@@ -274,89 +342,90 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     
     return CustomScrollView(
       slivers: [
-        // Custom App Bar
-        SliverAppBar(
-          expandedHeight: 120,
-          floating: false,
-          pinned: true,
-          backgroundColor: isDark ? AppTheme.dark : AppTheme.white,
-          elevation: 0,
-          automaticallyImplyLeading: false, // Remove back button
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.chat_rounded),
-                color: Colors.white, // Always white for better visibility on gradient background
-                onPressed: () {
-                  // Navigate to user chats screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserChatsScreen(),
-                    ),
-                  );
-                },
-              ),
+        // Clean minimal header (white, no gradient)
+        SliverToBoxAdapter(
+          child: Container(
+            color: isDark ? AppTheme.dark : AppTheme.white,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 20,
+              right: 20,
+              bottom: 20,
             ),
-            const SizedBox(width: 8),
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-            title: RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  color: isDark ? AppTheme.white : AppTheme.black,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  height: 1.2,
-                ),
-                children: [
-                  TextSpan(text: '${l10n.appTitle}\n'),
-                  TextSpan(
-                    text: l10n.appBrandSubtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/jo_logo.svg',
+                          width: 32,
+                          height: 32,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          l10n.appTitle,
+                          style: TextStyle(
+                            color: isDark ? AppTheme.white : AppTheme.black,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primary,
-                    AppTheme.secondary,
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.appBrandSubtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.6),
+                      ),
+                    ),
                   ],
                 ),
-              ),
+                IconButton(
+                  icon: Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: isDark ? AppTheme.white : Colors.black87,
+                    size: 24,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserChatsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ),
         
-        // Welcome Section
+        // Main content
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 8),
                 _buildWelcomeCard(isDark),
-                const SizedBox(height: 24),
-                _buildQuickActions(isDark),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
+                _buildHighValueContent(l10n, isDark),
+                const SizedBox(height: 32),
                 _buildRecentProviders(l10n, isDark),
                 const SizedBox(height: 24),
                 _buildStatsCard(isDark),
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -367,194 +436,183 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _buildWelcomeCard(bool isDark) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primary,
-            AppTheme.secondary,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Icon(
-              Icons.home_rounded,
-              color: AppTheme.white,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                                                  l10n.welcomeBack,
-                  style: TextStyle(
-                    color: AppTheme.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                                      l10n.findPerfectService,
-                  style: TextStyle(
-                    color: AppTheme.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(bool isDark) {
-    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-                              l10n.quickActions,
+          l10n.welcomeBack,
           style: TextStyle(
-            color: isDark ? AppTheme.white : AppTheme.black,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.8),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.search_rounded,
-                title: l10n.findServices,
-                subtitle: l10n.browseProviders,
-                color: AppTheme.primary,
-                isDark: isDark,
-                onTap: () => _onTabTapped(1),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calendar_today_rounded,
-                title: l10n.myBookings,
-                subtitle: l10n.viewAppointments,
-                color: AppTheme.accent,
-                isDark: isDark,
-                onTap: () => _onTabTapped(2),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.favorite_rounded,
-                title: l10n.favorites,
-                subtitle: l10n.savedProviders,
-                color: AppTheme.warning,
-                isDark: isDark,
-                onTap: () => _onTabTapped(2),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.person_rounded,
-                title: l10n.profile,
-                subtitle: l10n.manageAccount,
-                color: AppTheme.secondary,
-                isDark: isDark,
-                onTap: () => _onTabTapped(3),
-              ),
-            ),
-          ],
+        const SizedBox(height: 4),
+        Text(
+          l10n.findPerfectService,
+          style: TextStyle(
+            color: isDark ? AppTheme.white : AppTheme.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildHighValueContent(AppLocalizations l10n, bool isDark) {
+    if (_nextUpcomingBooking != null) {
+      return _buildNextAppointmentCard(l10n, isDark);
+    }
+    return _buildSearchPrompt(l10n, isDark);
+  }
+
+  Widget _buildNextAppointmentCard(AppLocalizations l10n, bool isDark) {
+    final b = _nextUpcomingBooking!;
+    final providerName = b.provider?.fullName ?? l10n.provider;
+    final serviceType = _getLocalizedServiceType(b.provider?.serviceType, l10n);
+    final formattedDate = '${b.serviceDateTime.day}/${b.serviceDateTime.month}/${b.serviceDateTime.year}';
+    final formattedTime = '${b.serviceDateTime.hour.toString().padLeft(2, '0')}:${b.serviceDateTime.minute.toString().padLeft(2, '0')}';
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.of(context).pushNamed(
+          BookingDetailScreen.routeName,
+          arguments: b.id,
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isDark ? AppTheme.dark : AppTheme.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.06),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: isDark 
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              color: AppTheme.primary,
+              size: 28,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.upcomingBookings,
+                    style: TextStyle(
+                      color: AppTheme.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    providerName,
+                    style: TextStyle(
+                      color: isDark ? AppTheme.white : AppTheme.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '$serviceType · $formattedDate $formattedTime',
+                    style: TextStyle(
+                      color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.4),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchPrompt(AppLocalizations l10n, bool isDark) {
+    return GestureDetector(
+      onTap: () => _onTabTapped(1),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.dark : AppTheme.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.06),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.search_rounded,
+              color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.4),
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.findServices,
+                    style: TextStyle(
+                      color: isDark ? AppTheme.white : AppTheme.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    l10n.browseProviders,
+                    style: TextStyle(
+                      color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.5),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Container(
-              width: 50,
-              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(25),
+                color: AppTheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                color: isDark ? AppTheme.white : AppTheme.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
-                fontSize: 12,
+              child: Text(
+                l10n.viewAll,
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -574,8 +632,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               l10n.recentProviders,
               style: TextStyle(
                 color: isDark ? AppTheme.white : AppTheme.black,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
             TextButton(
@@ -604,8 +662,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.history_rounded,
+Icon(
+            Icons.history_outlined,
                             size: 48,
                             color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
                           ),
@@ -632,10 +690,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       itemCount: _recentProviders.length,
                       itemBuilder: (context, index) {
                         final provider = _recentProviders[index];
+                        final bookingId = provider.id != null
+                            ? _providerToBookingId[provider.id!]
+                            : null;
                         return Container(
                           width: 160,
                           margin: const EdgeInsets.only(right: 16),
-                          child: _buildProviderCard(provider, isDark),
+                          child: _buildProviderCard(provider, isDark, bookingId),
                         );
                       },
                     ),
@@ -644,38 +705,96 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildProviderCard(Provider provider, bool isDark) {
+  Widget _buildProviderCardImage(Provider provider, bool isDark) {
+    final hasImage = provider.profilePictureUrl != null &&
+        provider.profilePictureUrl!.trim().isNotEmpty;
+    final imageUrl = hasImage && !provider.profilePictureUrl!.startsWith('http')
+        ? '${ConversationService.baseImageUrl}/${provider.profilePictureUrl!.replaceFirst(RegExp(r'^/'), '')}'
+        : provider.profilePictureUrl;
+
     return Container(
+      height: 100,
       decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.06),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Center(
+        child: hasImage && imageUrl != null
+            ? ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  imageUrl,
+                  width: double.infinity,
+                  height: 100,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildProviderPlaceholder(provider, isDark),
+                ),
+              )
+            : _buildProviderPlaceholder(provider, isDark),
+      ),
+    );
+  }
+
+  Widget _buildProviderPlaceholder(Provider provider, bool isDark) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          _getInitials(provider.fullName),
+          style: TextStyle(
+            color: AppTheme.primary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProviderCard(Provider provider, bool isDark, [String? bookingId]) {
+    final canTap = (bookingId != null && bookingId.isNotEmpty) ||
+        (provider.id != null && provider.id!.isNotEmpty);
+    return GestureDetector(
+      onTap: canTap
+          ? () {
+              if (bookingId != null && bookingId.isNotEmpty) {
+                Navigator.of(context).pushNamed(
+                  BookingDetailScreen.routeName,
+                  arguments: bookingId,
+                );
+              } else if (provider.id != null) {
+                Navigator.of(context).pushNamed(
+                  ProviderDetailScreen.routeName,
+                  arguments: provider.id!,
+                );
+              }
+            }
+          : null,
+      child: Container(
+        decoration: BoxDecoration(
         color: isDark ? AppTheme.dark : AppTheme.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.06),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: isDark 
-              ? Colors.black.withOpacity(0.3)
-              : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.business_rounded,
-                size: 40,
-                color: AppTheme.primary,
-              ),
-            ),
-          ),
+          _buildProviderCardImage(provider, isDark),
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -704,7 +823,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 Row(
                   children: [
                     Icon(
-                      Icons.star_rounded,
+                      Icons.star_outline_rounded,
                       size: 16,
                       color: AppTheme.warning,
                     ),
@@ -723,6 +842,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -731,14 +851,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.dark : AppTheme.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.06),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: isDark 
-              ? Colors.black.withOpacity(0.3)
-              : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -760,7 +882,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     color: AppTheme.primary,
                   )
                 : _buildStatItem(
-                    icon: Icons.calendar_today_rounded,
+                    icon: Icons.calendar_today_outlined,
                     value: _activeBookingsCount.toString(),
                     label: AppLocalizations.of(context)!.activeBookings,
                     color: AppTheme.primary,
@@ -781,19 +903,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }) {
     return Column(
       children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
-        ),
+Icon(
+        icon,
+        color: color,
+        size: 28,
+      ),
         const SizedBox(height: 8),
         Text(
           value,
@@ -817,45 +931,56 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildBottomNavigationBar(bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppTheme.dark : AppTheme.white,
-        boxShadow: [
-          BoxShadow(
-            color: isDark 
-              ? Colors.black.withOpacity(0.3)
-              : Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+        border: Border(
+          top: BorderSide(
+            color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.08),
+            width: 1,
           ),
-        ],
+        ),
       ),
-      child: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: isDark ? AppTheme.dark : AppTheme.white,
-        selectedItemColor: AppTheme.primary,
-        unselectedItemColor: AppTheme.systemGray,
-        elevation: 0,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: AppLocalizations.of(context)!.home,
+      child: SafeArea(
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              backgroundColor: isDark ? AppTheme.dark : AppTheme.white,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_rounded),
-            label: AppLocalizations.of(context)!.services,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: _onTabTapped,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              selectedItemColor: AppTheme.primary,
+              unselectedItemColor: AppTheme.systemGray,
+              elevation: 0,
+              iconSize: 24,
+              items: [
+                BottomNavigationBarItem(
+                  icon: Icon(_currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+                  label: l10n.home,
+                ),
+BottomNavigationBarItem(
+                icon: Icon(_currentIndex == 1 ? Icons.search_rounded : Icons.search_rounded),
+                label: l10n.navServices,
+              ),
+                BottomNavigationBarItem(
+                  icon: Icon(_currentIndex == 2 ? Icons.calendar_month_rounded : Icons.calendar_month_outlined),
+                  label: l10n.bookings,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(_currentIndex == 3 ? Icons.person_rounded : Icons.person_outline_rounded),
+                  label: l10n.profile,
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_rounded),
-            label: AppLocalizations.of(context)!.bookings,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: AppLocalizations.of(context)!.profile,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -87,6 +87,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookings => 'الحجوزات';
 
   @override
+  String get navServices => 'الخدمات';
+
+  @override
   String get messages => 'الرسائل';
 
   @override
@@ -106,6 +109,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get nearbyProviders => 'مقدمو الخدمة القريبون';
+
+  @override
+  String get withinTenKm => 'ضمن 10 كم';
+
+  @override
+  String get locationPermissionDenied =>
+      'يجب السماح بالموافقة على الموقع للتصفية حسب المسافة';
 
   @override
   String get topRated => 'الأعلى تقييماً';
