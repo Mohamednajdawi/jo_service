@@ -1,6 +1,25 @@
 const mongoose = require('mongoose');
 require('dotenv').config({ path: require('path').join(__dirname, '..', '..', '.env') });
 
+// Handle MongoDB extended JSON date format { $date: "..." } so documents load without cast errors
+(function patchDateCast() {
+    const DateType = mongoose.Schema.Types.Date;
+    // Mongoose 8: try prototype.cast first, else static cast()
+    let originalCast = DateType.prototype.cast;
+    if (typeof DateType.cast === 'function' && !originalCast) {
+        originalCast = DateType.cast();
+    }
+    if (originalCast) {
+        DateType.prototype.cast = function (value) {
+            if (value && typeof value === 'object' && value !== null && '$date' in value) {
+                const v = value.$date;
+                return v instanceof Date ? v : new Date(v);
+            }
+            return originalCast.call(this, value);
+        };
+    }
+})();
+
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
