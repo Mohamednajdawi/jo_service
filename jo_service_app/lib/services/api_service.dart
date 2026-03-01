@@ -415,8 +415,13 @@ class ApiService {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        return User.fromJson(responseData['user']);
+        final responseData = json.decode(response.body) as Map<String, dynamic>;
+        final userMap = Map<String, dynamic>.from(responseData['user'] as Map);
+        // Use the URL the server just returned so the image displays immediately
+        if (responseData['profilePictureUrl'] != null) {
+          userMap['profilePictureUrl'] = responseData['profilePictureUrl'];
+        }
+        return User.fromJson(userMap);
       } else {
         print('Error uploading profile picture: ${response.statusCode} - ${response.body}');
         throw Exception(

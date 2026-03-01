@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../constants/api_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart' as ctxProvider;
@@ -15,6 +16,23 @@ import './user_login_screen.dart';
 import './notification_settings_screen.dart';
 import '../constants/theme.dart';
 import 'dart:ui';
+
+/// Builds a URL that the app can load for a profile image. Handles stored URLs
+/// that are missing the protocol (e.g. "host.com/uploads/...") or are full URLs.
+String? _profileImageUrl(String? url) {
+  if (url == null || url.isEmpty) return null;
+  final base = ApiConfig.productionBaseUrl;
+  if (url.startsWith(base)) return url;
+  if (url.startsWith('http')) {
+    try {
+      final uri = Uri.parse(url);
+      if (uri.path.isNotEmpty) return '$base${uri.path}';
+    } catch (_) {}
+  }
+  // Stored value may be host + path without protocol (e.g. "host.com/uploads/...")
+  if (!url.startsWith('/')) return 'https://$url';
+  return '$base$url';
+}
 
 class UserProfileScreen extends StatefulWidget {
   static const routeName = '/user-profile';
@@ -217,9 +235,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
       final updatedUser =
           await _apiService.uploadUserProfilePicture(token, _imageFile!);
-      if (updatedUser != null) {
+      if (updatedUser != null && mounted) {
         setState(() {
           _currentUser = updatedUser;
+          _userProfileFuture = Future.value(updatedUser);
           _isUploading = false;
           _imageFile = null;
         });
@@ -383,6 +402,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  Widget _buildProfileNetworkImage(String? profilePictureUrl) {
+    final url = _profileImageUrl(profilePictureUrl);
+    if (url == null || url.isEmpty) {
+      return Container(
+        color: AppTheme.light,
+        child: Icon(Icons.person, size: 40, color: AppTheme.grey),
+      );
+    }
+    return Image.network(
+      url,
+      key: ValueKey(url),
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        color: AppTheme.light,
+        child: Icon(Icons.person, size: 40, color: AppTheme.grey),
+      ),
+      loadingBuilder: (_, child, progress) {
+        if (progress == null) return child;
+        return Container(
+          color: AppTheme.light,
+          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      },
+    );
+  }
+
   Widget _buildProfileHeader(User user) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -426,29 +471,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     color: Colors.white,
                   ),
                   padding: const EdgeInsets.all(2),
-                  child: CircleAvatar(
-                    radius: 45,
-                    backgroundColor: AppTheme.light,
-                    backgroundImage: _imageFile != null
-                        ? FileImage(_imageFile!) as ImageProvider<Object>
-                        : (user.profilePictureUrl != null &&
-                                user.profilePictureUrl!.isNotEmpty
-                            ? NetworkImage(
-                                user.profilePictureUrl!.startsWith('http')
-                                    ? user.profilePictureUrl!
-                                    : '${ConversationService.baseImageUrl}${user.profilePictureUrl!.startsWith('/') ? '' : '/'}${user.profilePictureUrl!}',
-                              )
-                            : null),
-                    child: _isUploading
-                        ? CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                          )
-                        : ((_imageFile == null &&
-                                (user.profilePictureUrl == null ||
-                                    user.profilePictureUrl!.isEmpty))
-                            ? Icon(Icons.person, size: 40, color: AppTheme.grey)
-                            : null),
+                  child: ClipOval(
+                    child: SizedBox(
+                      width: 90,
+                      height: 90,
+                      child: _imageFile != null
+                          ? Image.file(_imageFile!, fit: BoxFit.cover)
+                          : _isUploading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : _buildProfileNetworkImage(user.profilePictureUrl),
+                    ),
                   ),
                 ),
                 Positioned(

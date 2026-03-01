@@ -323,8 +323,10 @@ const ProviderController = {
 
         try {
             // Use APP_URL for correct public URL when behind proxy (Railway, etc.)
-            const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
-            const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/profile-pictures/${req.file.filename}`;
+            let baseUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+            baseUrl = baseUrl.replace(/\/$/, '');
+            if (!/^https?:\/\//i.test(baseUrl)) baseUrl = `https://${baseUrl}`;
+            const fileUrl = `${baseUrl}/uploads/profile-pictures/${req.file.filename}`;
 
             // Update the provider's profile with the new picture URL
             const provider = await Provider.findByIdAndUpdate(
