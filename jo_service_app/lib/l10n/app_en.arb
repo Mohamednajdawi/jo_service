@@ -1,0 +1,806 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "JO Service",
+  "welcome": "Welcome",
+  "login": "Login",
+  "signup": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "fullName": "Full Name",
+  "phoneNumber": "Phone Number",
+  "confirmPassword": "Confirm Password",
+  "forgotPassword": "Forgot Password?",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "createAccount": "Create Account",
+  "signInToAccount": "Sign in to your account",
+  
+  "roleSelection": "Select Your Role",
+  "customer": "Customer",
+  "serviceProvider": "Service Provider",
+  "administrator": "Administrator",
+  "customerDescription": "Book services from providers",
+  "providerDescription": "Provide services to customers",
+  "adminDescription": "Service providers are managed through the admin panel - tap the admin icon above",
+  
+  "home": "Home",
+  "profile": "Profile",
+  "bookings": "Bookings",
+  "messages": "Messages",
+  "favorites": "Favorites",
+  "settings": "Settings",
+  "dashboard": "Dashboard",
+  
+  "findServices": "Find Services",
+  "searchForServices": "Search for services...",
+  "nearbyProviders": "Nearby Providers",
+  "topRated": "Top Rated",
+  "categories": "Categories",
+  "viewAll": "View All",
+  
+  "providerDetails": "Provider Details",
+  "about": "About",
+  "services": "Services",
+  "reviews": "Reviews",
+  "availability": "Availability",
+  "hourlyRate": "Hourly Rate",
+  "rating": "Rating",
+  "totalReviews": "Total Reviews",
+  "bookNow": "Book Now",
+  "sendMessage": "Send Message",
+  "addToFavorites": "Add to Favorites",
+  "removeFromFavorites": "Remove from Favorites",
+  
+  "bookingDetails": "Booking Details",
+  "serviceDate": "Service Date",
+  "serviceTime": "Service Time",
+  "location": "Location",
+  "notes": "Notes",
+  "photos": "Photos",
+  "addPhotos": "Add Photos",
+  "bookingStatus": "Booking Status",
+  "pending": "Pending",
+  "accepted": "Accepted",
+  "declined": "Declined",
+  "inProgress": "In Progress",
+  "completed": "Completed",
+  "cancelled": "Cancelled",
+  
+  "createBooking": "Create Booking",
+  "selectDate": "Select Date",
+  "selectTime": "Select Time",
+  "enterLocation": "Enter Location",
+  "addNotes": "Add Notes",
+  "submitBooking": "Submit Booking",
+  
+  "myBookings": "My Bookings",
+  "upcomingBookings": "Upcoming Bookings",
+  "pastBookings": "Past Bookings",
+  "noBookings": "No bookings found",
+  "viewDetails": "View Details",
+  "cancelBooking": "Cancel Booking",
+  "acceptBooking": "Accept Booking",
+  "declineBooking": "Decline Booking",
+  "startService": "Start Service",
+  "completeService": "Complete Service",
+  
+  "chat": "Chat",
+  "typeMessage": "Type a message...",
+  "send": "Send",
+  "online": "Online",
+  "offline": "Offline",
+  "noMessages": "No messages yet",
+  "sendImage": "Send Image",
+  
+  "rateProvider": "Rate Provider",
+  "yourRating": "Your Rating",
+  "writeReview": "Write a review...",
+  "submitRating": "Submit Rating",
+  "punctuality": "Punctuality",
+  
+  "notificationSettings": "Notification Settings",
+  "notificationPreferences": "Notification Preferences",
+  "notificationPreferencesDescription": "Choose which notifications you want to receive",
+  "bookingUpdates": "Booking Updates",
+  "bookingUpdatesDescription": "Receive notifications about booking status changes",
+  "chatMessages": "Chat Messages",
+  "chatMessagesDescription": "Receive notifications for new chat messages",
+  "ratings": "Ratings",
+  "ratingsDescription": "Receive notifications for new ratings and reviews",
+  "promotions": "Promotions",
+  "promotionsDescription": "Receive notifications about special offers and promotions",
+  "saveSettings": "Save Settings",
+  "testNotificationSent": "Test notification sent successfully",
+  "errorSendingTestNotification": "Error sending test notification",
+  "settingsSaved": "Settings saved successfully",
+  "errorSavingSettings": "Error saving settings",
+  "sendTestNotification": "Send Test Notification",
+  "notificationInfo": "Notification Information",
+  "notificationInfoDescription": "You can control which notifications you receive. Disabling notifications may cause you to miss important updates about your bookings and messages.",
+  "workQuality": "Work Quality",
+  "speedEfficiency": "Speed & Efficiency",
+  "cleanliness": "Cleanliness",
+  "overallRating": "Overall Rating",
+  
+  "notifications": "Notifications",
+  "noNotifications": "No notifications",
+  "markAllRead": "Mark All Read",
+  
+  "language": "Language",
+  "changeLanguage": "Change Language",
+  "english": "English",
+  "arabic": "العربية",
+  
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "update": "Update",
+  "confirm": "Confirm",
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK",
+  
+  "logout": "Logout",
+  "logoutConfirmation": "Are you sure you want to logout?",
+  
+  "adminPanel": "Admin Panel",
+  "providerManagement": "Provider Management",
+  "userManagement": "User Management",
+  "systemStats": "System Statistics",
+  "pendingProviders": "Pending Providers",
+  "verifiedProviders": "Verified Providers",
+  "rejectedProviders": "Rejected Providers",
+  "verifyProvider": "Verify Provider",
+  "resendVerification": "Resend Verification",
+  "resendVerificationEmail": "Resend Verification Email",
+  "verificationEmailSent": "Verification email sent!",
+  "accountNotVerified": "Account not verified",
+  "pleaseVerifyAccount": "Please verify your email and phone number before logging in.",
+  "verifyAccount": "Verify Account",
+  "rejectProvider": "Reject Provider",
+  "totalUsers": "Total Users",
+  "totalProviders": "Total Providers",
+  "totalBookings": "Total Bookings",
+  
+  "invalidEmail": "Please enter a valid email address",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "fieldRequired": "This field is required",
+  "loginFailed": "Login failed. Please check your credentials",
+  "networkError": "Network error. Please check your connection",
+  "bookingFailed": "Failed to create booking. Please try again",
+  "ratingFailed": "Failed to submit rating. Please try again",
+  
+  "welcomeBack": "Welcome back!",
+  "readyToServe": "Ready to serve?",
+  "jordanServiceProvider": "Jordan Service Provider",
+  "findPerfectService": "Find the perfect service provider for your needs",
+  "quickActions": "Quick Actions",
+  "browseProviders": "Browse providers",
+  "viewAppointments": "View appointments",
+  "savedProviders": "Saved providers",
+  "manageAccount": "Manage account",
+  "recentProviders": "Recent Providers",
+  "seeAll": "See All",
+  "errorLoadingProviders": "Error loading providers",
+  "noProvidersFound": "No providers found",
+  "unknown": "Unknown",
+  "service": "Service",
+  "yourActivity": "Your Activity",
+  "activeBookings": "Active Bookings",
+  "completedThisMonth": "Completed This Month",
+  "manageProfile": "Manage Profile",
+  "updateServicesRates": "Update your services, rates, and availability",
+  "manageBookings": "Manage Bookings",
+  "viewRespondBookings": "View and respond to booking requests",
+  "viewRespondMessages": "View and respond to customer messages",
+  "signOut": "Sign Out",
+  "signOutConfirmation": "Are you sure you want to sign out?",
+  "autoRefreshEnabled": "Auto-refresh enabled",
+  "autoRefreshDisabled": "Auto-refresh disabled",
+  "view": "View",
+  "newBookingNotification": "You have {count} new booking{plural}!",
+  "@newBookingNotification": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "providerSignup": "Provider Sign Up",
+  "joinAsProvider": "Join as provider",
+  "startOfferingServices": "Start offering your services today",
+  "personalInformation": "Personal Information",
+  "businessInformation": "Business Information",
+  "enterFullName": "Enter your full name",
+  "enterEmail": "Enter your email",
+  "enterPassword": "Enter your password",
+  "confirmYourPassword": "Confirm your password",
+  "companyName": "Company name",
+  "enterCompanyName": "Enter your company name",
+  "serviceType": "Service type",
+  "enterServiceType": "Enter your service type",
+  "enterHourlyRate": "Enter your hourly rate",
+  "city": "City",
+  "address": "Address",
+  "enterDetailedAddress": "Enter your detailed address",
+  "createProviderAccount": "Create provider account",
+  "emailRequired": "Email is required",
+  "enterValidEmail": "Enter a valid email address",
+  "passwordRequired": "Password is required",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "confirmPasswordRequired": "Please confirm your password",
+  "hourlyRateRequired": "Hourly rate is required",
+  "enterValidRate": "Enter a valid hourly rate",
+
+  "unknownProvider": "Unknown Provider",
+  "unknownService": "Unknown Service",
+  "rate": "Rate",
+  "per": "per",
+  "hour": "hour",
+  "mapView": "Map View",
+  "mapFunctionalityDisabled": "Map functionality temporarily disabled",
+  "errorRequestingPermission": "Error requesting permission",
+  
+  "userSignup": "User Sign Up",
+  "createYourAccount": "Create your account",
+  "getStartedToday": "Get started today",
+  "enterPhoneNumber": "Enter your phone number",
+  "createUserAccount": "Create user account",
+  
+  "adminLogin": "Admin Login",
+  "adminPortal": "Admin Portal",
+  "secureAccess": "Secure access to system management",  
+  "loginAsAdmin": "Login as admin",
+  
+  "providerLogin": "Provider Login",
+  "providerPortal": "Provider Portal",
+  "accessYourServices": "Access your services and bookings",
+  "loginAsProvider": "Login as provider",
+  
+  "bookingFor": "Booking for",
+  "selectDateAndTime": "Select Date and Time",
+  "bookingDate": "Booking Date",
+  "bookingTime": "Booking Time",
+  "locationDetails": "Location Details",
+  "additionalNotes": "Additional Notes",
+  "optionalNotes": "Optional notes about your service request",
+  "attachPhotos": "Attach Photos",
+  "attachRelevantPhotos": "Attach relevant photos (optional)",
+  "takePhoto": "Take Photo",
+  "chooseFromGallery": "Choose from Gallery",
+  "bookingSubmitted": "Booking submitted successfully!",
+  "errorSubmittingBooking": "Error submitting booking",
+  
+  "chatWith": "Chat with {name}",
+  "@chatWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "startTyping": "Start typing...",
+  "enterMessage": "Enter your message",
+  "failedToSendMessage": "Failed to send message",
+  "selectImage": "Select Image",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  
+  "all": "All",
+  "noBookingsFound": "No bookings found",
+  "scheduleNewService": "Schedule a new service to see bookings here",
+  "errorLoadingBookings": "Error loading bookings",
+  "errorLoadingMoreBookings": "Error loading more bookings",
+  "errorCancellingBooking": "Error cancelling booking",
+  "areYouSureCancelBooking": "Are you sure you want to cancel this booking?",
+  "advancedSearch": "Advanced Search",
+  "filters": "Filters",
+  "clearAll": "Clear All",
+  "category": "Category",
+  "minimumRating": "Minimum Rating",
+  "maxPrice": "Max Price",
+  "maxDistance": "Max Distance",
+  "onlyAvailable": "Only Available",
+  "serviceTags": "Service Tags",
+  "sortBy": "Sort By",
+  "order": "Order",
+  "ascending": "Ascending",
+  "descending": "Descending",
+  "price": "Price",
+  "distance": "Distance",
+  "results": "Results",
+  "page": "Page",
+  "searching": "Searching...",
+  "noProvidersFound": "No providers found",
+  "tryAdjustingFilters": "Try adjusting your filters",
+  "enterLocation": "Enter Location",
+  "searchProviders": "Search Providers",
+  "useMyLocation": "Use My Location",
+  "locationNotAvailable": "Location not available",
+  "unknownStatus": "Unknown",
+  
+  "plumbing": "Plumbing",
+  "electrical": "Electrical",
+  "cleaning": "Cleaning",
+  "gardening": "Gardening",
+  "painting": "Painting",
+  "carpentry": "Carpentry",
+  
+  "userProfile": "User Profile",
+  "editProfile": "Edit Profile",
+  "personalInfo": "Personal Info",
+  "contactInfo": "Contact Info",
+  "preferences": "Preferences",
+  "aboutApp": "About App",
+  "version": "Version",
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+  "contactSupport": "Contact Support",
+  "areYouSureSignOut": "Are you sure you want to sign out?",
+  "languageSettings": "Language Settings",
+  "selectLanguage": "Select Language",
+  "darkMode": "Dark Mode",
+  "pushNotifications": "Push Notifications",
+  "emailNotifications": "Email Notifications",
+  "soundEnabled": "Sound Enabled",
+  
+  "favoriteProviders": "Favorite Providers",
+  "noFavorites": "No favorites yet",
+  "addFavoritesMessage": "Save providers you like to see them here",
+  "viewProfile": "View Profile",
+  "bookService": "Book Service",
+  
+  "noMessagesYet": "No messages yet",
+  "startConversation": "Start a conversation with your service providers",
+  "searchMessages": "Search messages",
+  "lastSeen": "Last seen",
+  "typing": "Typing...",
+  
+  "myFavorites": "My Favorites",
+  "errorLoadingFavorites": "Error loading favorites:",
+  "noFavoritesYet": "No favorites yet",
+  "addServiceProvidersToFavorites": "Add service providers to your favorites",
+  "removedFromFavorites": "Removed from favorites",
+  "generalService": "General Service",
+  
+  "myChats": "My Chats",
+  "noChatsYet": "No chats yet",
+  "bookServiceToChat": "Book a service to start chatting with providers",
+  "authenticationRequired": "Authentication required",
+  "failedToLoadChats": "Failed to load chats",
+  "provider": "Provider",
+  "bookingRequestSent": "Booking request sent - waiting for response",
+  "bookingConfirmed": "Booking confirmed! Start chatting to coordinate",
+  "serviceInProgress": "Service in progress",
+  "bookingDeclined": "Booking declined by provider",
+  "bookingCancelled": "Booking cancelled",
+  "tapToStartChatting": "Tap to start chatting",
+  
+  "signInToYourProviderAccount": "Sign in to your provider account", 
+  "emailAddress": "Email address",
+  "enterYourEmail": "Enter your email",
+  "enterYourPassword": "Enter your password",
+  "signIn": "Sign in",
+  "dontHaveAnAccount": "Don't have an account? ",
+  "signUp": "Sign up",
+  
+  "exitApp": "Exit App",
+  "exit": "Exit",
+  
+  "electrician": "Electrician",
+  "plumber": "Plumber",
+  "painter": "Painter",
+  "cleaner": "Cleaner",
+  "carpenter": "Carpenter",
+  "gardener": "Gardener",
+  "mechanic": "Mechanic",
+  "airConditioningTechnician": "Air Conditioning Technician",
+  "generalMaintenance": "General Maintenance",
+  "housekeeper": "Housekeeper",
+  
+  "serviceProviders": "Service Providers",
+  "providersIn": "Providers in {location}",
+  "@providersIn": {
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsFor": "Results for \"{query}\"",
+  "@resultsFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "viewFavorites": "View Favorites",
+  "clearFilters": "Clear Filters",
+  "refreshList": "Refresh List",
+  "createSampleData": "Create Sample Data",
+  "cityLabel": "City: {city}",
+  "@cityLabel": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "searchByNameOrService": "Search by name or service type...",
+  "errorLoadingPage": "Error loading page: {error}",
+  "@errorLoadingPage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingProvidersMessage": "Error loading providers: {error}.\nMake sure your backend server is running and accessible.",
+  "@errorLoadingProvidersMessage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noResultsMatch": "No results match \"{query}\"",
+  "@noResultsMatch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noProvidersInCategory": "No providers in {category} category",
+  "@noProvidersInCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "addSomeViaApi": "Add some via your API or try refreshing",
+  "selectCity": "Select City",
+  "clearFilter": "Clear Filter",
+  "sampleDataMode": "Sample Data Mode",
+  "sampleDataDescription": "This will display sample data for testing purposes. The data is not real and not saved.",
+  "showSampleData": "Show Sample Data",
+  "addedToFavorites": "Added to favorites",
+  "locationNotSpecified": "Location not specified",
+  "previousPage": "Previous Page",
+  "nextPage": "Next Page",
+  "pageOf": "Page {current} of {total}",
+  "@pageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "generalServices": "General Services",
+  
+  "selectDateTime": "Select Date & Time",
+  "serviceLocation": "Service Location",
+  "additionalNotesOptional": "Additional Notes (Optional)",
+  "confirmLogout": "Confirm Logout",
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "authenticationError": "Authentication error. Please login again.",
+  "bookingRequestSubmitted": "Booking request submitted successfully!",
+  "errorCreatingBooking": "Error creating booking",
+  "addPhoto": "Add Photo",
+  "photosSelected": "photo(s) selected",
+  "submitBookingRequest": "Submit Booking Request",
+  "enterServiceLocationDetails": "Enter service location details",
+  "pickLocationOnMap": "Pick location on map",
+  "anySpecialRequests": "Any special requests or information?",
+  "errorPickingImage": "Error picking image",
+  "errorOpeningLocationPicker": "Error opening location picker",
+  
+  "searchByNameOrServiceType": "Search by name or service type...",
+  
+  "accountSettings": "Account Settings",
+  "locationServices": "Location Services",
+  "enterYourFullName": "Enter your full name",
+  "pleaseEnterYourName": "Please enter your name",
+  "enterYourPhoneNumber": "Enter your phone number",
+  "imageUploadNotSupported": "Image upload is not supported in web mode. Please use the mobile app.",
+  "authenticationErrorCannotUpload": "Authentication error. Cannot upload image.",
+  "profilePictureUploadedSuccessfully": "Profile picture uploaded successfully!",
+  "failedToUploadProfilePicture": "Failed to upload profile picture",
+  "areYouSureLogout": "Are you sure you want to log out?",
+  "noPhoneNumber": "No phone number",
+  "couldNotLoadUserProfile": "Could not load user profile.",
+  "errorLoadingProfile": "Error loading profile",
+  "authenticationTokenNotFound": "Authentication token not found. Please log in.",
+  "authenticationErrorCannotSave": "Authentication error. Cannot save profile.",
+  "failedToUpdateProfile": "Failed to update profile",
+  
+  "imageUploadNotSupportedWeb": "Image upload is not supported in web mode. Please use the mobile app.",
+  "errorPickingImageProfile": "Error picking image",
+  "authenticationErrorPleaseLogin": "Authentication error. Please login again.",
+  "user": "User",
+  
+  "serviceDetails": "Service Details",
+  "description": "Description",
+  "noDescriptionProvided": "No description provided.",
+  "locationAndContact": "Location & Contact",
+  "address": "Address",
+  "notSpecified": "Not specified",
+  "phone": "Phone",
+  "ratingsText": "ratings",
+  "noRatingsYet": "No ratings yet",
+  "noBookingsFound": "No bookings found",
+  "deleteAccount": "Delete Account",
+  "deleteAccountConfirmation": "Are you sure you want to delete your account?",
+  "deleteAccountWarning": "This action cannot be undone. All your data will be permanently deleted.",
+  "accountDeleted": "Account deleted successfully",
+  "failedToDeleteAccount": "Failed to delete account",
+  "couldNotLoadProfile": "Could not load user profile.",
+  "authenticationTokenNotFound": "Authentication token not found. Please log in.",
+  "authenticationError": "Authentication error. Cannot save profile.",
+  "failedToUpdateProfile": "Failed to update profile",
+  "imageUploadNotSupportedWeb": "Image upload is not supported in web mode. Please use the mobile app.",
+  "errorPickingImage": "Error picking image",
+  "profilePictureUploadedSuccessfully": "Profile picture uploaded successfully!",
+  "failedToUploadProfilePicture": "Failed to upload profile picture",
+  "deletingAccount": "Deleting account...",
+  "user": "User",
+  "noPhoneNumber": "No phone number",
+  "enterYourFullName": "Enter your full name",
+  "pleaseEnterYourName": "Please enter your name",
+  "enterYourPhoneNumber": "Enter your phone number",
+  "cancel": "Cancel",
+  "save": "Save",
+  "languageChanged": "Language changed successfully",
+  
+  "messages": "Messages",
+  "refresh": "Refresh",
+  "authenticationTokenMissing": "Authentication token is missing.",
+  "failedToLoadConversations": "Failed to load conversations",
+  "deletingAccount": "Deleting account...",
+  "profilePictureUploadedSuccessfully": "Profile picture uploaded successfully!",
+  "errorUploadingProfilePicture": "Error uploading profile picture",
+  "authenticationErrorPleaseLogin": "Authentication error. Please login again.",
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "errorUpdatingProfile": "Error updating profile",
+  "chooseFromGallery": "Choose from Gallery",
+  "takePhoto": "Take Photo",
+  "errorLoadingBookings": "Error loading bookings",
+  "errorLoadingMoreBookings": "Error loading more bookings",
+  "failedToOpenNavigation": "Failed to open navigation",
+  "bookingStatusUpdatedTo": "Booking status updated to {status}",
+  "@bookingStatusUpdatedTo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingBookingStatus": "Error updating booking status",
+  "autoRefreshEnabled": "Auto-refresh enabled",
+  "autoRefreshDisabled": "Auto-refresh disabled",
+  "editProfileAuthenticationError": "Authentication error. Please login again.",
+  "editProfileErrorLoading": "Error loading profile: {error}",
+  "@editProfileErrorLoading": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editProfileImageUploadWebNotSupported": "Image upload is not supported on web. Please use the mobile app.",
+  "editProfileErrorPickingImage": "Error picking image: {error}",
+  "@editProfileErrorPickingImage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editProfileCameraWebNotSupported": "Camera is not supported on web. Please use the mobile app.",
+  "editProfileErrorTakingPhoto": "Error taking photo: {error}",
+  "@editProfileErrorTakingPhoto": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "editProfileBusinessProfile": "Business Profile",
+  "editProfileUpdateBusinessInfo": "Update your business information and photo",
+  "editProfileUploadPhoto": "Upload Photo",
+  "editProfileBusinessName": "Business Name",
+  "editProfileBusinessNameRequired": "Business name is required",
+  "editProfileDescription": "Description",
+  "editProfileDescriptionRequired": "Description is required",
+  "editProfileServices": "Services (comma separated)",
+  "editProfileServicesRequired": "Services are required",
+  "editProfileHourlyRate": "Hourly Rate ($)",
+  "editProfileHourlyRateRequired": "Hourly rate is required",
+  "editProfileEnterValidNumber": "Please enter a valid number",
+  "editProfilePhoneNumber": "Phone Number",
+  "editProfilePhoneRequired": "Phone number is required",
+  "editProfileAddress": "Address",
+  "editProfileAddressRequired": "Address is required",
+  "editProfileSaveChanges": "Save Changes",
+  
+  "nowAvailable": "You are now available for bookings",
+  "nowUnavailable": "You are now unavailable for bookings",
+  "availabilityStatus": "Availability Status", 
+  "availableForBookings": "You are available for new bookings",
+  "currentlyUnavailable": "You are currently unavailable",
+  
+  "providerBookingsTitle": "Manage Bookings",
+  "allBookings": "All Bookings",
+  "pendingBookings": "Pending",
+  "acceptedBookings": "Accepted",
+  "inProgressBookings": "In Progress",
+  "completedBookings": "Completed",
+  "cancelledBookings": "Cancelled",
+  "rejectedBookings": "Rejected",
+  "noBookingsFound": "No bookings found",
+  "noBookingsMessage": "No bookings found for this filter",
+  "loadingBookings": "Loading bookings...",
+  "errorLoadingBookings": "Error loading bookings",
+  "refreshBookings": "Refresh Bookings",
+  "newBookingsReceived": "{count} new booking(s) received!",
+  "@newBookingsReceived": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bookingFrom": "Booking from",
+  "requestedOn": "Requested on",
+  "scheduledFor": "Scheduled for",
+  "hourlyRate": "Hourly Rate",
+  "estimatedDuration": "Estimated Duration",
+  "totalAmount": "Total Amount",
+  "acceptBooking": "Accept Booking",
+  "rejectBooking": "Reject Booking",
+  "markInProgress": "Start Work",
+  "markCompleted": "Complete Work",
+  "viewDetails": "View Details",
+  "bookingAccepted": "Booking accepted",
+  "bookingRejected": "Booking rejected",
+  "bookingMarkedInProgress": "Work started",
+  "bookingMarkedCompleted": "Work completed",
+  "errorUpdatingBooking": "Error updating booking",
+  "authenticationTokenMissing": "Authentication token missing",
+  "loadMore": "Load More",
+  "noMoreBookings": "No more bookings",
+  
+  "providerMessagesTitle": "Messages",
+  "conversations": "Conversations",
+  "noConversationsFound": "No conversations found",
+  "noConversationsMessage": "No conversations started yet. Customer messages will appear here.",
+  "loadingConversations": "Loading conversations...",
+  "errorLoadingConversations": "Error loading conversations",
+  "lastMessage": "Last message",
+  "newMessage": "New message",
+  "unreadMessages": "Unread messages",
+  "chatWith": "Chat with",
+  "openChat": "Open Chat",
+  "messagePreview": "Message preview",
+  "noMessagesYet": "No messages yet",
+  "startConversation": "Start conversation",
+  
+  "editProviderProfileTitle": "Edit Profile",
+  "businessProfile": "Business Profile",
+  "updateBusinessInfo": "Update your business information and photo",
+  "uploadPhoto": "Upload Photo",
+  "businessName": "Business Name",
+  "businessNameRequired": "Business name is required",
+  "description": "Description",
+  "descriptionRequired": "Description is required",
+  "services": "Services (comma separated)",
+  "servicesRequired": "Services are required",
+  "hourlyRate": "Hourly Rate ($)",
+  "hourlyRateRequired": "Hourly rate is required",
+  "enterValidNumber": "Please enter a valid number",
+  "phoneNumber": "Phone Number",
+  "phoneRequired": "Phone number is required",
+  "address": "Address",
+  "addressRequired": "Address is required",
+  "saveChanges": "Save Changes",
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "errorUpdatingProfile": "Error updating profile",
+  "profilePictureUploadedSuccessfully": "Profile picture uploaded successfully!",
+  "errorUploadingProfilePicture": "Error uploading profile picture",
+  "chooseFromGallery": "Choose from Gallery",
+  "takePhoto": "Take Photo",
+  "imageUploadWebNotSupported": "Image upload is not supported on web. Please use the mobile app.",
+  "errorPickingImage": "Error picking image",
+  "cameraWebNotSupported": "Camera is not supported on web. Please use the mobile app.",
+  "errorTakingPhoto": "Error taking photo",
+  
+  "deletingAccount": "Deleting account...",
+  "failedToDeleteAccount": "Failed to delete account",
+  "authenticationErrorPleaseLogin": "Authentication error. Please login again.",
+  "authenticationTokenNotFound": "Authentication token not found. Please log in.",
+  "failedToLoadConversations": "Failed to load conversations",
+  "refresh": "Refresh",
+  "openInGoogleMaps": "Open in Google Maps",
+  "accept": "Accept",
+  "decline": "Decline",
+  "startService": "Start Service",
+  "completeService": "Complete Service",
+  "bookingStatusUpdatedTo": "Booking status updated to {status}",
+  "@bookingStatusUpdatedTo": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingBookingStatus": "Error updating booking status",
+  "failedToOpenNavigation": "Failed to open navigation",
+  
+  "errorLoadingBookingDetails": "Error loading booking details",
+  "providerInformationNotAvailable": "Provider information not available",
+  "pleaseSelectRating": "Please select a rating",
+  "ratingSubmittedSuccessfully": "Rating submitted successfully",
+  "errorSubmittingRating": "Error submitting rating",
+  "confirmAction": "Confirm {action}",
+  "@confirmAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "areYouSureActionBooking": "Are you sure you want to {action} this booking?",
+  "@areYouSureActionBooking": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelBooking": "Cancel Booking",
+  "accept": "Accept",
+  "decline": "Decline",
+  "startService": "Start Service",
+  "completeService": "Complete Service",
+  "bookingActionSuccessfully": "Booking {action} successfully.",
+  "@bookingActionSuccessfully": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelled": "cancelled",
+  "accepted": "accepted",
+  "declined": "declined",
+  "markedAsInProgress": "marked as in progress",
+  "markedAsCompleted": "marked as completed",
+  "updated": "updated",
+  "cancelledByUser": "Cancelled by User",
+  "cancelledByProvider": "Cancelled by Provider",
+  "declinedByProvider": "Declined by Provider",
+  "providerStatusUpdatedTo": "Provider status updated to",
+  "selectLocation": "Select Location",
+  "locationPickerTitle": "Choose Your Location",
+  "locationPickerSubtitle": "Tap on the map to set your exact location",
+  "currentLocation": "Current Location",
+  "searchLocation": "Search for a location",
+  "locationSelected": "Location selected successfully",
+  "locationError": "Error getting location"
+}

@@ -1,0 +1,256 @@
+# JO Service Marketplace - Project Intelligence
+
+## Project Overview
+JO Service is a comprehensive on-demand service marketplace connecting users with service providers. The platform includes real-time chat, booking management, rating systems, and admin oversight.
+
+## Architecture Patterns
+
+### Backend (Node.js/Express)
+- **MVC Pattern**: Routes → Controllers → Services → Models
+- **JWT Authentication**: Role-based access (user/provider/admin)
+- **WebSocket Real-time**: Chat and notifications
+- **File Upload**: Multer with validation (5MB limit, images only)
+- **Error Handling**: Global middleware with specific error types
+- **Response Format**: Consistent {success, data, message} structure
+
+### Flutter App (Primary Frontend)
+- **Provider Pattern**: State management with ChangeNotifier
+- **Service Layer**: ApiService, AuthService, ChatService, etc.
+- **Internationalization**: English/Arabic with RTL support
+- **Navigation**: Named routes with proper parameter passing
+- **UI Components**: Reusable widgets with consistent styling
+
+### React Native App (Alternative)
+- **Context API**: State management with useReducer
+- **Axios**: HTTP client with interceptors
+- **Navigation**: React Navigation with stack navigator
+- **AsyncStorage**: Local data persistence
+
+## Database Patterns (MongoDB)
+
+### Document Structure
+- **Users**: email, password, fullName, phoneNumber, profilePictureUrl
+- **Providers**: + businessName, serviceType, location, availability, ratings
+- **Bookings**: user, provider, serviceDateTime, status, photos
+- **Messages**: conversationId, senderId, recipientId, text, images
+- **Ratings**: booking, user, provider, multi-criteria ratings
+
+### Query Patterns
+- **Geospatial**: 2dsphere indexes for location-based searches
+- **Population**: .populate() for related data
+- **Aggregation**: $group, $avg for rating calculations
+- **Indexing**: Compound indexes for performance
+
+## API Patterns
+
+### Authentication Flow
+1. Register/Login → JWT token generation
+2. Token in Authorization header: "Bearer <token>"
+3. Middleware validation: protectRoute → isUser/isProvider/isAdmin
+4. Token expiry: 7 days with refresh mechanism
+
+### File Upload Flow
+1. Multer middleware with size/type validation
+2. Unique filename generation: timestamp-random-originalname
+3. Storage in public/uploads/ directory
+4. URL returned in response for frontend access
+
+### Real-time Communication
+1. WebSocket connection with JWT authentication
+2. Conversation IDs: sorted participant IDs
+3. Message types: text, image, booking_images
+4. Connection management with cleanup
+
+## Development Preferences
+
+### Code Style
+- **Backend**: ES6+ syntax, async/await, destructuring
+- **Flutter**: Dart conventions, widget composition, const constructors
+- **React Native**: Functional components, hooks, TypeScript preferred
+- **Naming**: camelCase for variables, PascalCase for classes/components
+
+### Error Handling
+- **Backend**: Try-catch with specific error responses
+- **Frontend**: User-friendly error messages with retry options
+- **Validation**: Client and server-side validation
+- **Logging**: Structured logging for debugging
+
+### Testing Approach
+- **Unit Tests**: Jest for backend, Flutter Test for Flutter
+- **Integration Tests**: API endpoint testing
+- **UI Tests**: Widget tests for Flutter, Component tests for React Native
+- **Manual Testing**: Cross-platform device testing
+
+## Key Implementation Patterns
+
+### State Management
+```dart
+// Flutter Provider Pattern
+class AuthService extends ChangeNotifier {
+  User? _currentUser;
+  User? get currentUser => _currentUser;
+  
+  Future<void> login(String email, String password) async {
+    // API call and state update
+    notifyListeners();
+  }
+}
+```
+
+### API Service Pattern
+```dart
+// Flutter API Service
+class ApiService {
+  static const String baseUrl = 'http://localhost:3000/api';
+  
+  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
+    // HTTP POST with error handling
+  }
+}
+```
+
+### WebSocket Pattern
+```dart
+// Flutter WebSocket
+class ChatService {
+  WebSocketChannel? _channel;
+  
+  void connect(String token) {
+    _channel = WebSocketChannel.connect(
+      Uri.parse('ws://localhost:3000?token=$token'),
+    );
+  }
+}
+```
+
+## Common Development Tasks
+
+### Adding New API Endpoints
+1. Create route in routes/ directory
+2. Add controller in controllers/ directory
+3. Implement middleware chain (auth, validation, upload)
+4. Add to Swagger documentation
+5. Test with Postman/curl
+
+### Adding New Flutter Screens
+1. Create screen in lib/screens/
+2. Add route in navigation
+3. Implement state management if needed
+4. Add internationalization strings
+5. Test on multiple platforms
+
+### Database Schema Changes
+1. Update Mongoose model
+2. Add database migration if needed
+3. Update API responses
+4. Update frontend models
+5. Test data flow
+
+## Performance Considerations
+
+### Backend Optimization
+- **Database Indexing**: Compound indexes for common queries
+- **Query Optimization**: Limit, skip, select for large datasets
+- **Caching**: Redis for frequently accessed data (future)
+- **File Storage**: Cloud storage for production (future)
+
+### Frontend Optimization
+- **Image Caching**: CachedNetworkImage for profile pictures
+- **Lazy Loading**: Pagination for provider lists
+- **Memory Management**: Dispose controllers and streams
+- **Bundle Size**: Tree shaking and code splitting
+
+## Security Patterns
+
+### Authentication
+- **JWT Tokens**: Secure token generation and validation
+- **Password Hashing**: bcrypt with salt rounds
+- **Role-based Access**: User, Provider, Admin roles
+- **Token Expiry**: 7-day tokens with refresh
+
+### File Upload Security
+- **File Validation**: Type and size checking
+- **Secure Naming**: Timestamp-based unique names
+- **Path Traversal**: Prevent directory traversal attacks
+- **Virus Scanning**: Future enhancement
+
+### API Security
+- **Rate Limiting**: 100 requests/minute per IP
+- **CORS Configuration**: Restricted origins
+- **Input Validation**: Server-side validation
+- **Error Handling**: No sensitive data in errors
+
+## Internationalization Patterns
+
+### Flutter i18n
+- **ARB Files**: app_en.arb, app_ar.arb
+- **Locale Service**: Provider for language management
+- **RTL Support**: Automatic text direction
+- **Cultural Adaptation**: Arabic-specific UI patterns
+
+### Translation Keys
+- **Consistent Naming**: screen.action format
+- **Context Awareness**: Different translations for same word
+- **Pluralization**: Proper plural forms
+- **Cultural Sensitivity**: Appropriate terminology
+
+## Deployment Considerations
+
+### Environment Configuration
+- **Development**: Localhost with hot reload
+- **Staging**: Test environment with production-like setup
+- **Production**: Cloud deployment with monitoring
+- **Environment Variables**: Secure configuration management
+
+### Database Management
+- **Backup Strategy**: Automated daily backups
+- **Migration System**: Version-controlled schema changes
+- **Monitoring**: Performance and error tracking
+- **Scaling**: Read replicas and sharding (future)
+
+## Common Issues and Solutions
+
+### WebSocket Connection Issues
+- **Problem**: Connections dropping under load
+- **Solution**: Implement reconnection logic with exponential backoff
+- **Prevention**: Connection pooling and cleanup
+
+### File Upload Issues
+- **Problem**: Large files causing timeouts
+- **Solution**: Implement chunked uploads
+- **Prevention**: Client-side file size validation
+
+### Performance Issues
+- **Problem**: Slow API responses
+- **Solution**: Database indexing and query optimization
+- **Prevention**: Regular performance monitoring
+
+### Memory Issues
+- **Problem**: High memory usage in Flutter app
+- **Solution**: Proper disposal of controllers and streams
+- **Prevention**: Memory profiling and optimization
+
+## Development Workflow
+
+### Feature Development
+1. **Planning**: Define requirements and API contracts
+2. **Backend First**: Implement API endpoints and database changes
+3. **Frontend Integration**: Update Flutter/React Native apps
+4. **Testing**: Unit, integration, and manual testing
+5. **Documentation**: Update API docs and user guides
+
+### Bug Fixes
+1. **Reproduction**: Identify steps to reproduce
+2. **Root Cause**: Debug and identify the issue
+3. **Fix**: Implement solution with tests
+4. **Verification**: Test across platforms
+5. **Deployment**: Deploy with monitoring
+
+### Code Review Process
+1. **Self Review**: Check code quality and tests
+2. **Peer Review**: Code review with team member
+3. **Testing**: Verify functionality and performance
+4. **Documentation**: Update relevant documentation
+5. **Deployment**: Merge and deploy
+
+This project intelligence helps maintain consistency, efficiency, and quality across the JO Service marketplace development. 
