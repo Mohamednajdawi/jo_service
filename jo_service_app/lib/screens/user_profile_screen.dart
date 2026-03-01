@@ -96,6 +96,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _initializeControllers(user);
         }
         return user;
+      }).catchError((e, _) async {
+        final msg = e.toString();
+        if (msg.contains('401') || msg.contains('Session invalid') || msg.contains('Invalid user ID')) {
+          await authService.clearAuthData();
+          if (mounted) {
+            Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
+              UserLoginScreen.routeName,
+              (route) => false,
+            );
+          }
+        }
+        throw e;
       });
     });
   }

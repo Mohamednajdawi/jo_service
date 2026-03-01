@@ -477,11 +477,19 @@ const AuthController = {
                 user = normalizeExtendedJsonDates(updatedRaw);
             }
 
-            // Generate JWT token (id must be a string for JWT and for later ObjectId.isValid checks)
+            // Generate JWT token (id must be a 24-char hex string for MongoDB and for /users/me)
             const rawId = user._id || user.id;
-            const userId = rawId != null ? String(rawId) : null;
-            if (!userId) {
-                return res.status(500).json({ message: 'Unable to read user ID for token.' });
+            let userId = null;
+            if (rawId != null) {
+                if (typeof rawId === 'string') userId = rawId.trim();
+                else if (typeof rawId === 'object' && (rawId.oid ?? rawId['$oid'] ?? rawId['oid'])) {
+                    userId = String(rawId.oid ?? rawId['$oid'] ?? rawId['oid']).trim();
+                } else {
+                    userId = String(rawId).trim();
+                }
+            }
+            if (!userId || userId === '[object Object]' || !/^[a-f0-9]{24}$/i.test(userId)) {
+                return res.status(500).json({ message: 'Unable to create session. Please try again.' });
             }
             const token = generateToken({ id: userId, type: 'user' });
 

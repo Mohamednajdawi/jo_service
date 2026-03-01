@@ -1,11 +1,26 @@
 const User = require('../models/user.model');
 const mongoose = require('mongoose');
 
-// Normalize JWT auth id to a string (handles ObjectId or { $oid: "..." } in token)
+// Normalize JWT auth id to a string (handles id/userId, string, or { $oid / oid: "..." } in token)
 function getAuthUserId(req) {
-    let id = req.auth && req.auth.id != null ? req.auth.id : null;
-    if (id && typeof id === 'object') id = id.oid ?? id['$oid'] ?? id;
-    return id != null ? String(id) : null;
+    const auth = req.auth;
+    if (!auth) return null;
+    let id = auth.id ?? auth.userId ?? null;
+    if (id == null) return null;
+    if (typeof id === 'string') {
+        const s = id.trim();
+        return s.length > 0 && s !== '[object Object]' ? s : null;
+    }
+    if (typeof id === 'object') {
+        const extracted = id.oid ?? id['$oid'] ?? id['oid'];
+        if (extracted != null) {
+            const s = String(extracted).trim();
+            return s.length > 0 ? s : null;
+        }
+        return null;
+    }
+    const s = String(id).trim();
+    return s.length > 0 && s !== '[object Object]' ? s : null;
 }
 
 const UserController = {
@@ -18,7 +33,10 @@ const UserController = {
         }
 
         if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format.' });
+            return res.status(401).json({
+                message: 'Session invalid. Please log out and log in again.',
+                code: 'INVALID_USER_ID'
+            });
         }
 
         try {
