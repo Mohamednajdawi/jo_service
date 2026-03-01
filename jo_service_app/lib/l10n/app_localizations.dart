@@ -323,6 +323,24 @@ abstract class AppLocalizations {
   /// **'View All'**
   String get viewAll;
 
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @cases.
+  String get cases;
+
+  /// No description provided for @done.
+  String get done;
+
+  /// No description provided for @noCasesYet.
+  String get noCasesYet;
+
+  /// No description provided for @bookServiceToSeeCases.
+  String get bookServiceToSeeCases;
+
   /// No description provided for @providerDetails.
   ///
   /// In en, this message translates to:

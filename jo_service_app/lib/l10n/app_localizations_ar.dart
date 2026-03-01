@@ -127,6 +127,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get viewAll => 'عرض الكل';
 
   @override
+  String get more => 'المزيد';
+
+  @override
+  String get cases => 'القضايا';
+
+  @override
+  String get done => 'مكتمل';
+
+  @override
+  String get noCasesYet => 'لا توجد قضايا بعد';
+
+  @override
+  String get bookServiceToSeeCases => 'احجز خدمة لرؤية قضاياك هنا';
+
+  @override
   String get providerDetails => 'تفاصيل مقدم الخدمة';
 
   @override

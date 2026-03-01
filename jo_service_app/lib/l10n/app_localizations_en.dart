@@ -128,6 +128,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAll => 'View All';
 
   @override
+  String get more => 'More';
+
+  @override
+  String get cases => 'Cases';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get noCasesYet => 'No cases yet';
+
+  @override
+  String get bookServiceToSeeCases => 'Book a service to see your cases here';
+
+  @override
   String get providerDetails => 'Provider Details';
 
   @override

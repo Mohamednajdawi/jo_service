@@ -42,6 +42,11 @@
   "topRated": "الأعلى تقييماً",
   "categories": "الفئات",
   "viewAll": "عرض الكل",
+  "more": "المزيد",
+  "cases": "القضايا",
+  "done": "مكتمل",
+  "noCasesYet": "لا توجد قضايا بعد",
+  "bookServiceToSeeCases": "احجز خدمة لرؤية قضاياك هنا",
   
   "providerDetails": "تفاصيل مقدم الخدمة",
   "about": "حول",

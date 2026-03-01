@@ -16,9 +16,14 @@ import 'dart:convert';
 class ProviderListScreen extends StatefulWidget {
   final String? initialSearch;
   final String? initialLocation;
+  final String? initialCategory;
 
-  const ProviderListScreen(
-      {this.initialSearch, this.initialLocation, super.key});
+  const ProviderListScreen({
+    this.initialSearch,
+    this.initialLocation,
+    this.initialCategory,
+    super.key,
+  });
 
   @override
   State<ProviderListScreen> createState() => _ProviderListScreenState();
@@ -72,6 +77,10 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
     // Initialize location from initialLocation if provided
     if (widget.initialLocation != null && widget.initialLocation!.isNotEmpty) {
       _selectedLocation = widget.initialLocation!;
+    }
+
+    if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty) {
+      _selectedCategory = widget.initialCategory!;
     }
 
     _loadProviders();

@@ -42,6 +42,11 @@
   "topRated": "Top Rated",
   "categories": "Categories",
   "viewAll": "View All",
+  "more": "More",
+  "cases": "Cases",
+  "done": "Done",
+  "noCasesYet": "No cases yet",
+  "bookServiceToSeeCases": "Book a service to see your cases here",
   
   "providerDetails": "Provider Details",
   "about": "About",

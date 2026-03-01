@@ -11,11 +11,8 @@ import 'user_profile_screen.dart';
 import 'favorites_screen.dart';
 import 'user_chats_screen.dart';
 import 'booking_detail_screen.dart';
-import 'provider_detail_screen.dart';
-import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
-import '../services/conversation_service.dart';
 import 'package:provider/provider.dart' as provider; // Import provider package
 
 class UserHomeScreen extends StatefulWidget {
@@ -29,16 +26,12 @@ class UserHomeScreen extends StatefulWidget {
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
   int _currentIndex = 0;
-  late Future<List<Provider>> _providersFuture;
   final PageController _pageController = PageController();
   
-  // API service instances
-  final ApiService _apiService = ApiService();
   final BookingService _bookingService = BookingService();
   
   // Real data state variables
-  List<Provider> _recentProviders = [];
-  final Map<String, String> _providerToBookingId = {};
+  List<Booking> _recentBookings = [];
   int _activeBookingsCount = 0;
   Booking? _nextUpcomingBooking;
   bool _isLoadingActivity = false;
@@ -57,7 +50,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     try {
       // Load recent providers and user activity data
       await Future.wait([
-        _loadRecentProviders(),
         _loadUserActivity(),
       ]);
     } catch (e) {
@@ -66,66 +58,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       setState(() {
         _isLoadingActivity = false;
       });
-    }
-  }
-  
-  Future<void> _loadRecentProviders() async {
-    try {
-      final authService = provider.Provider.of<AuthService>(context, listen: false);
-      final token = await authService.getToken();
-      
-      print('🔍 DEBUG: Loading recent providers...');
-      print('🔍 DEBUG: Token exists: ${token != null}');
-      
-      if (token != null) {
-        // Get user's recent bookings to find recent providers
-        final response = await _bookingService.getUserBookings(token: token, limit: 10);
-        print('🔍 DEBUG: Bookings response: $response');
-        
-        final bookingsData = response['bookings'] as List<dynamic>? ?? [];
-        print('🔍 DEBUG: Bookings data count: ${bookingsData.length}');
-        
-        // The bookings are already parsed as Booking objects, no need to call fromJson
-        final bookings = bookingsData.cast<Booking>();
-        print('🔍 DEBUG: Parsed bookings count: ${bookings.length}');
-        
-        // Map providerId -> most recent bookingId (bookings are typically newest first)
-        final providerToBooking = <String, String>{};
-        for (final booking in bookings) {
-          final pid = booking.provider?.id;
-          if (pid != null && !providerToBooking.containsKey(pid)) {
-            providerToBooking[pid] = booking.id;
-          }
-        }
-        final providerIds = providerToBooking.keys.take(5).toList();
-        
-        print('🔍 DEBUG: Provider IDs found: $providerIds');
-        
-        // Fetch provider details for recent providers
-        List<Provider> providers = [];
-        final providerBookingMap = <String, String>{};
-        for (String providerId in providerIds) {
-          try {
-            final p = await _apiService.fetchProviderById(providerId, token);
-            if (p != null) {
-              providers.add(p);
-              providerBookingMap[providerId] = providerToBooking[providerId]!;
-            }
-          } catch (e) {
-            print('Error fetching provider $providerId: $e');
-          }
-        }
-        
-        setState(() {
-          _recentProviders = providers;
-          _providerToBookingId.clear();
-          _providerToBookingId.addAll(providerBookingMap);
-        });
-      }
-    } catch (e) {
-      print('Error loading recent providers: $e');
-      // Fallback to all providers if recent providers fail
-      _providersFuture = _getAllProviders();
     }
   }
   
@@ -171,6 +103,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         setState(() {
           _activeBookingsCount = activeBookings;
           _nextUpcomingBooking = upcoming.isNotEmpty ? upcoming.first : null;
+          _recentBookings = bookings.take(8).toList();
         });
       }
     } catch (e) {
@@ -178,21 +111,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
   
-  Future<List<Provider>> _getAllProviders() async {
-    try {
-      final authService = provider.Provider.of<AuthService>(context, listen: false);
-      final token = await authService.getToken();
-      
-      if (token != null) {
-        final response = await _apiService.fetchProviders(null);
-        return response.providers;
-      }
-    } catch (e) {
-      print('Error loading providers: $e');
-    }
-    return [];
-  }
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -265,16 +183,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       default:
         return Icons.home_repair_service_outlined;
     }
-  }
-
-  String _getInitials(String? fullName) {
-    if (fullName == null || fullName.trim().isEmpty) return '?';
-    final trimmed = fullName.trim();
-    final parts = trimmed.split(RegExp(r'\s+'));
-    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return trimmed.length >= 2 ? trimmed.substring(0, 2).toUpperCase() : trimmed[0].toUpperCase();
   }
 
 
@@ -422,7 +330,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 const SizedBox(height: 32),
                 _buildHighValueContent(l10n, isDark),
                 const SizedBox(height: 32),
-                _buildRecentProviders(l10n, isDark),
+                _buildCases(l10n, isDark),
                 const SizedBox(height: 24),
                 _buildStatsCard(isDark),
                 const SizedBox(height: 24),
@@ -440,15 +348,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          l10n.welcomeBack,
-          style: TextStyle(
-            color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.8),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
           l10n.findPerfectService,
           style: TextStyle(
             color: isDark ? AppTheme.white : AppTheme.black,
@@ -464,7 +363,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     if (_nextUpcomingBooking != null) {
       return _buildNextAppointmentCard(l10n, isDark);
     }
-    return _buildSearchPrompt(l10n, isDark);
+    return _buildMostUsedServices(l10n, isDark);
   }
 
   Widget _buildNextAppointmentCard(AppLocalizations l10n, bool isDark) {
@@ -550,11 +449,41 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildSearchPrompt(AppLocalizations l10n, bool isDark) {
+  /// Two most-used services plus "More" button. Tapping a service opens provider list filtered by that type.
+  Widget _buildMostUsedServices(AppLocalizations l10n, bool isDark) {
+    final mostUsed = [
+      {'category': 'Plumbing', 'displayName': l10n.plumbing, 'icon': Icons.plumbing},
+      {'category': 'Electrical', 'displayName': l10n.electrical, 'icon': Icons.electrical_services},
+    ];
+    return Row(
+      children: [
+        for (final service in mostUsed)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildServiceCard(
+                displayName: service['displayName'] as String,
+                icon: service['icon'] as IconData,
+                category: service['category'] as String,
+                isDark: isDark,
+              ),
+            ),
+          ),
+        _buildMoreButton(l10n, isDark),
+      ],
+    );
+  }
+
+  Widget _buildServiceCard({
+    required String displayName,
+    required IconData icon,
+    required String category,
+    required bool isDark,
+  }) {
     return GestureDetector(
-      onTap: () => _onTabTapped(1),
+      onTap: () => _openProviderListForCategory(category),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
         decoration: BoxDecoration(
           color: isDark ? AppTheme.dark : AppTheme.white,
           borderRadius: BorderRadius.circular(16),
@@ -570,49 +499,53 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.search_rounded,
-              color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.4),
-              size: 24,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.findServices,
-                    style: TextStyle(
-                      color: isDark ? AppTheme.white : AppTheme.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    l10n.browseProviders,
-                    style: TextStyle(
-                      color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.5),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+            Icon(icon, color: AppTheme.primary, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              displayName,
+              style: TextStyle(
+                color: isDark ? AppTheme.white : AppTheme.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                l10n.viewAll,
-                style: TextStyle(
-                  color: AppTheme.primary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreButton(AppLocalizations l10n, bool isDark) {
+    return GestureDetector(
+      onTap: () => _onTabTapped(1),
+      child: Container(
+        width: 56,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppTheme.primary.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: AppTheme.primary, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              l10n.more,
+              style: const TextStyle(
+                color: AppTheme.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -621,7 +554,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildRecentProviders(AppLocalizations l10n, bool isDark) {
+  void _openProviderListForCategory(String category) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ProviderListScreen(initialCategory: category),
+      ),
+    );
+  }
+
+  static bool _isCaseDone(String status) {
+    return status == 'completed' || status == 'paid' ||
+        status == 'declined_by_provider' || status == 'cancelled_by_user';
+  }
+
+  Widget _buildCases(AppLocalizations l10n, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -629,7 +575,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              l10n.recentProviders,
+              l10n.cases,
               style: TextStyle(
                 color: isDark ? AppTheme.white : AppTheme.black,
                 fontSize: 18,
@@ -637,7 +583,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => _onTabTapped(1),
+              onPressed: () => _onTabTapped(2),
               child: Text(
                 l10n.seeAll,
                 style: TextStyle(
@@ -650,36 +596,37 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 200,
+          height: 140,
           child: _isLoadingActivity
               ? const Center(
                   child: CircularProgressIndicator(
                     color: AppTheme.primary,
                   ),
                 )
-              : _recentProviders.isEmpty
+              : _recentBookings.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-Icon(
-            Icons.history_outlined,
+                          Icon(
+                            Icons.folder_open_outlined,
                             size: 48,
-                            color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
+                            color: AppTheme.systemGray,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'No recent providers yet',
+                            l10n.noCasesYet,
                             style: TextStyle(
-                              color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
+                              color: AppTheme.systemGray,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Book a service to see recent providers here',
+                            l10n.bookServiceToSeeCases,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
+                              color: AppTheme.systemGray,
                             ),
                           ),
                         ],
@@ -687,16 +634,13 @@ Icon(
                     )
                   : ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: _recentProviders.length,
+                      itemCount: _recentBookings.length,
                       itemBuilder: (context, index) {
-                        final provider = _recentProviders[index];
-                        final bookingId = provider.id != null
-                            ? _providerToBookingId[provider.id!]
-                            : null;
+                        final booking = _recentBookings[index];
                         return Container(
-                          width: 160,
+                          width: 180,
                           margin: const EdgeInsets.only(right: 16),
-                          child: _buildProviderCard(provider, isDark, bookingId),
+                          child: _buildCaseCard(booking, l10n, isDark),
                         );
                       },
                     ),
@@ -705,144 +649,109 @@ Icon(
     );
   }
 
-  Widget _buildProviderCardImage(Provider provider, bool isDark) {
-    final hasImage = provider.profilePictureUrl != null &&
-        provider.profilePictureUrl!.trim().isNotEmpty;
-    final imageUrl = hasImage && !provider.profilePictureUrl!.startsWith('http')
-        ? '${ConversationService.baseImageUrl}/${provider.profilePictureUrl!.replaceFirst(RegExp(r'^/'), '')}'
-        : provider.profilePictureUrl;
+  Widget _buildCaseCard(Booking booking, AppLocalizations l10n, bool isDark) {
+    final isDone = _isCaseDone(booking.status);
+    final providerName = booking.provider?.fullName ?? l10n.provider;
+    final serviceType = _getLocalizedServiceType(booking.provider?.serviceType, l10n);
+    final dateStr = '${booking.serviceDateTime.day}/${booking.serviceDateTime.month}/${booking.serviceDateTime.year}';
 
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.06),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Center(
-        child: hasImage && imageUrl != null
-            ? ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 100,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildProviderPlaceholder(provider, isDark),
-                ),
-              )
-            : _buildProviderPlaceholder(provider, isDark),
-      ),
-    );
-  }
-
-  Widget _buildProviderPlaceholder(Provider provider, bool isDark) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.12),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          _getInitials(provider.fullName),
-          style: TextStyle(
-            color: AppTheme.primary,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProviderCard(Provider provider, bool isDark, [String? bookingId]) {
-    final canTap = (bookingId != null && bookingId.isNotEmpty) ||
-        (provider.id != null && provider.id!.isNotEmpty);
     return GestureDetector(
-      onTap: canTap
-          ? () {
-              if (bookingId != null && bookingId.isNotEmpty) {
-                Navigator.of(context).pushNamed(
-                  BookingDetailScreen.routeName,
-                  arguments: bookingId,
-                );
-              } else if (provider.id != null) {
-                Navigator.of(context).pushNamed(
-                  ProviderDetailScreen.routeName,
-                  arguments: provider.id!,
-                );
-              }
-            }
-          : null,
+      onTap: () {
+        Navigator.of(context).pushNamed(
+          BookingDetailScreen.routeName,
+          arguments: booking.id,
+        );
+      },
       child: Container(
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-        color: isDark ? AppTheme.dark : AppTheme.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.06),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+          color: isDark ? AppTheme.dark : AppTheme.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDone
+                ? const Color(0xFF34C759).withOpacity(0.25)
+                : AppTheme.primary.withOpacity(0.2),
+            width: 1,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildProviderCardImage(provider, isDark),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  provider.fullName ?? 'Unknown',
-                  style: TextStyle(
-                    color: isDark ? AppTheme.white : AppTheme.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDone
+                        ? const Color(0xFF34C759).withOpacity(0.15)
+                        : AppTheme.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _getLocalizedServiceType(provider.serviceType, AppLocalizations.of(context)!),
-                  style: TextStyle(
-                    color: AppTheme.primary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  child: Icon(
+                    isDone ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                    size: 22,
+                    color: isDone ? const Color(0xFF34C759) : AppTheme.primary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star_outline_rounded,
-                      size: 16,
-                      color: AppTheme.warning,
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDone
+                        ? const Color(0xFF34C759).withOpacity(0.12)
+                        : AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isDone ? l10n.done : l10n.pending,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDone ? const Color(0xFF34C759) : AppTheme.primary,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${provider.averageRating?.toStringAsFixed(1) ?? '4.5'}',
-                      style: TextStyle(
-                        color: isDark ? AppTheme.systemGray : AppTheme.systemGray,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              providerName,
+              style: TextStyle(
+                color: isDark ? AppTheme.white : AppTheme.black,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              serviceType,
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              dateStr,
+              style: TextStyle(
+                color: AppTheme.systemGray,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
   }
 
