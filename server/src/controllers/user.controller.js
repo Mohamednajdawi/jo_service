@@ -1,11 +1,18 @@
 const User = require('../models/user.model');
 const mongoose = require('mongoose');
 
+// Normalize JWT auth id to a string (handles ObjectId or { $oid: "..." } in token)
+function getAuthUserId(req) {
+    let id = req.auth && req.auth.id != null ? req.auth.id : null;
+    if (id && typeof id === 'object') id = id.oid ?? id['$oid'] ?? id;
+    return id != null ? String(id) : null;
+}
+
 const UserController = {
     // GET /api/users/me - Get authenticated user's own profile
     async getMyProfile(req, res) {
-        const userId = req.auth.id;
-        
+        const userId = getAuthUserId(req);
+
         if (!userId) {
             return res.status(400).json({ message: 'User ID not found in authentication token.' });
         }
@@ -30,7 +37,10 @@ const UserController = {
 
     // PUT /api/users/me - Update authenticated user's profile
     async updateMyProfile(req, res) {
-        const userId = req.auth.id;
+        const userId = getAuthUserId(req);
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID not found in authentication token.' });
+        }
         const updateData = req.body;
 
         // Fields that a user can update (whitelist to prevent unwanted updates)
@@ -79,7 +89,7 @@ const UserController = {
 
     // POST /api/users/me/profile-picture - Upload profile picture
     async uploadProfilePicture(req, res) {
-        const userId = req.auth && req.auth.id ? String(req.auth.id) : null;
+        const userId = getAuthUserId(req);
 
         if (!userId) {
             return res.status(400).json({ message: 'User ID not found in token.' });
@@ -126,8 +136,8 @@ const UserController = {
 
     // DELETE /api/users/me - Delete authenticated user's account
     async deleteMyAccount(req, res) {
-        const userId = req.auth.id;
-        
+        const userId = getAuthUserId(req);
+
         if (!userId) {
             return res.status(400).json({ message: 'User ID not found in authentication token.' });
         }

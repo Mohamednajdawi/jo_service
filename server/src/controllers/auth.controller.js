@@ -477,8 +477,12 @@ const AuthController = {
                 user = normalizeExtendedJsonDates(updatedRaw);
             }
 
-            // Generate JWT token (user is either a Mongoose doc or a plain object with _id)
-            const userId = user._id || user.id;
+            // Generate JWT token (id must be a string for JWT and for later ObjectId.isValid checks)
+            const rawId = user._id || user.id;
+            const userId = rawId != null ? String(rawId) : null;
+            if (!userId) {
+                return res.status(500).json({ message: 'Unable to read user ID for token.' });
+            }
             const token = generateToken({ id: userId, type: 'user' });
 
             // Return user data and token (getUserResponse accepts doc or plain object)

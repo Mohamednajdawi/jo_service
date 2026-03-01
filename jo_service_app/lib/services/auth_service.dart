@@ -5,6 +5,14 @@ import './api_service.dart'; // To use getBaseUrl
 import './oauth_service.dart'; // Added for social login
 import 'package:flutter/material.dart'; // Added for ChangeNotifier
 
+/// Converts API id (String or MongoDB-style { \$oid: "..." }) to String.
+String? _idToString(dynamic value) {
+  if (value == null) return null;
+  if (value is String) return value;
+  if (value is Map && value.containsKey(r'$oid')) return value[r'$oid'] as String?;
+  return value.toString();
+}
+
 // UserInfo class to hold basic user details after login
 class UserInfo {
   final String id;
@@ -16,9 +24,9 @@ class UserInfo {
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
     return UserInfo(
-      id: json['_id'] ?? json['id'] as String, // Handle both _id and id
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
+      id: _idToString(json['_id'] ?? json['id']) ?? '',
+      email: (json['email'] as String?) ?? '',
+      fullName: (json['fullName'] as String?) ?? '',
     );
   }
 
@@ -345,14 +353,16 @@ class AuthService with ChangeNotifier {
       final result = await OAuthService.signInWithGoogle();
       
       if (result != null && result['success'] == true) {
-        // Save authentication data
+        final userMap = result['user'] as Map<String, dynamic>?;
+        if (userMap == null) throw Exception('Google login failed: no user data');
+        // Save authentication data (_id may be String or Map with $oid from API)
         await _saveAuthData(
-          result['token'],
-          'user', // Assume user type for social login
+          result['token'] as String,
+          'user',
           UserInfo(
-            id: result['user']['_id'] ?? result['user']['id'],
-            email: result['user']['email'],
-            fullName: result['user']['fullName'] ?? result['user']['displayName'] ?? '',
+            id: _idToString(userMap['_id'] ?? userMap['id']) ?? '',
+            email: (userMap['email'] as String?) ?? '',
+            fullName: (userMap['fullName'] ?? userMap['displayName']) as String? ?? '',
           ),
         );
         return result;
