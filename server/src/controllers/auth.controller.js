@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user.model');
 const Provider = require('../models/provider.model');
 const { generateToken } = require('../utils/jwt.utils');
@@ -481,16 +482,16 @@ const AuthController = {
             const rawId = user._id || user.id;
             let userId = null;
             if (rawId != null) {
-                if (typeof rawId === 'string') {
-                    userId = rawId.trim();
-                } else if (typeof rawId === 'object') {
-                    if (typeof rawId.toHexString === 'function') userId = rawId.toHexString();
-                    else if (rawId.oid != null) userId = String(rawId.oid).trim();
-                    else if (rawId['$oid'] != null) userId = String(rawId['$oid']).trim();
-                    else if (rawId['oid'] != null) userId = String(rawId['oid']).trim();
-                    else userId = String(rawId).trim();
-                } else {
-                    userId = String(rawId).trim();
+                try {
+                    if (typeof rawId === 'string') {
+                        userId = rawId.trim();
+                    } else {
+                        const oid = new mongoose.Types.ObjectId(rawId);
+                        userId = oid.toString();
+                    }
+                } catch (_) {
+                    const s = String(rawId);
+                    if (s && s !== '[object Object]') userId = s.trim();
                 }
             }
             if (!userId || userId === '[object Object]') {
