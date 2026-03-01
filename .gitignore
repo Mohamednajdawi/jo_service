@@ -62,6 +62,7 @@ ios/Runner/GeneratedPluginRegistrant.*
 public/uploads/*
 public/uploads/.gitkeep
 !public/uploads/.gitignore
+server/public/uploads/*
 
 # Database
 *.sqlite
