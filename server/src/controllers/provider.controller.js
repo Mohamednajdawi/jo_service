@@ -322,9 +322,9 @@ const ProviderController = {
         }
 
         try {
-            // Generate the URL for the uploaded file
-            const baseUrl = `${req.protocol}://${req.get('host')}`;
-            const fileUrl = `${baseUrl}/uploads/profile-pictures/${req.file.filename}`;
+            // Use APP_URL for correct public URL when behind proxy (Railway, etc.)
+            const baseUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+            const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/profile-pictures/${req.file.filename}`;
 
             // Update the provider's profile with the new picture URL
             const provider = await Provider.findByIdAndUpdate(

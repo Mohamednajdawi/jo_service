@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/booking_service.dart';
 import '../services/rating_service.dart';
 import '../services/navigation_service.dart';
+import '../services/conversation_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
 import './multi_criteria_rating_screen.dart';
@@ -636,8 +637,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                               _booking!.provider?.profilePictureUrl != null &&
                                       _booking!.provider!.profilePictureUrl!
                                           .isNotEmpty
-                                  ? NetworkImage(
-                                      _booking!.provider!.profilePictureUrl!)
+                                  ? NetworkImage(_booking!.provider!.profilePictureUrl!.startsWith('http')
+                                      ? _booking!.provider!.profilePictureUrl!
+                                      : '${ConversationService.baseImageUrl}${_booking!.provider!.profilePictureUrl!.startsWith('/') ? '' : '/'}${_booking!.provider!.profilePictureUrl!}')
                                   : const AssetImage('assets/default_user.png')
                                       as ImageProvider,
                           backgroundColor: Colors.grey[200],
@@ -701,6 +703,53 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                           title: Text(AppLocalizations.of(context)!.notes),
                           subtitle: Text(_booking!.userNotes!),
                         ),
+
+                      // Photos if available
+                      if (_booking!.photos != null &&
+                          _booking!.photos!.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          AppLocalizations.of(context)!.photos,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 120,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _booking!.photos!.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final path = _booking!.photos![index];
+                              final imageUrl = path.startsWith('http')
+                                  ? path
+                                  : '${ConversationService.baseImageUrl}${path.startsWith('/') ? path : '/$path'}';
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  imageUrl,
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 120,
+                                    height: 120,
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                      Icons.broken_image_outlined,
+                                      size: 32,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
 
                       // Rating section for completed bookings (user only)
                       _buildRatingSection(),

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart' as ctxProvider;
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/conversation_service.dart';
 import '../services/theme_service.dart';
 import '../services/locale_service.dart';
 import '../l10n/app_localizations.dart';
@@ -139,7 +140,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  // Add method to pick image from gallery
+  // Add method to pick image from gallery or camera
   Future<void> _pickImage() async {
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -151,8 +152,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
 
     try {
-      final XFile? pickedFile =
-          await _picker.pickImage(source: ImageSource.gallery);
+      final source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: Text(AppLocalizations.of(context)!.gallery),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: Text(AppLocalizations.of(context)!.camera),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (source == null) return;
+
+      final XFile? pickedFile = await _picker.pickImage(source: source);
       if (pickedFile != null) {
         setState(() {
           _imageFile = File(pickedFile.path);
@@ -242,7 +263,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ctxProvider.Provider.of<AuthService>(context, listen: false);
               await authService.logout();
               if (mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
+                Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
                   UserLoginScreen.routeName,
                   (route) => false,
                 );
@@ -343,7 +364,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
         
         // Navigate to user login screen
-        Navigator.of(context).pushNamedAndRemoveUntil(
+        Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
           UserLoginScreen.routeName,
           (route) => false,
         );
@@ -411,9 +432,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!) as ImageProvider<Object>
                         : (user.profilePictureUrl != null &&
-                                user.profilePictureUrl!.isNotEmpty &&
+                                user.profilePictureUrl!.isNotEmpty
+                            ? NetworkImage(
                                 user.profilePictureUrl!.startsWith('http')
-                            ? NetworkImage(user.profilePictureUrl!)
+                                    ? user.profilePictureUrl!
+                                    : '${ConversationService.baseImageUrl}${user.profilePictureUrl!.startsWith('/') ? '' : '/'}${user.profilePictureUrl!}',
+                              )
                             : null),
                     child: _isUploading
                         ? CircularProgressIndicator(

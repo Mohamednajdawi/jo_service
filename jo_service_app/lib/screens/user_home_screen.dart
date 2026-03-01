@@ -11,6 +11,7 @@ import 'user_profile_screen.dart';
 import 'favorites_screen.dart';
 import 'user_chats_screen.dart';
 import 'booking_detail_screen.dart';
+import 'provider_detail_screen.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
 import 'package:provider/provider.dart' as provider; // Import provider package
@@ -222,10 +223,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             });
           },
           children: [
-            _buildHomeTab(),
-            const ProviderListScreen(),
-            const UserBookingsScreen(),
-            const UserProfileScreen(),
+            Navigator(
+              onGenerateRoute: _generateTabRoute,
+              initialRoute: '/home',
+            ),
+            Navigator(
+              onGenerateRoute: _generateTabRoute,
+              initialRoute: '/services',
+            ),
+            Navigator(
+              onGenerateRoute: _generateTabRoute,
+              initialRoute: '/bookings',
+            ),
+            Navigator(
+              onGenerateRoute: _generateTabRoute,
+              initialRoute: '/profile',
+            ),
           ],
         ),
         bottomNavigationBar: _buildBottomNavigationBar(isDark),
@@ -233,10 +246,38 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
+  Route<dynamic>? _generateTabRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/home':
+        return MaterialPageRoute(builder: (_) => _buildHomeTab());
+      case '/services':
+        return MaterialPageRoute(builder: (_) => const ProviderListScreen());
+      case '/bookings':
+        return MaterialPageRoute(builder: (_) => const UserBookingsScreen());
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => const UserProfileScreen());
+      case ProviderDetailScreen.routeName:
+        final id = settings.arguments as String? ?? '';
+        return MaterialPageRoute(
+          builder: (_) => ProviderDetailScreen(providerId: id),
+        );
+      case BookingDetailScreen.routeName:
+        final id = settings.arguments as String? ?? '';
+        return MaterialPageRoute(
+          builder: (_) => BookingDetailScreen(bookingId: id),
+        );
+      default:
+        return MaterialPageRoute(builder: (_) => _buildHomeTab());
+    }
+  }
+
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
+    if (index == 0) {
+      _loadRealData();
+    }
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -859,7 +900,7 @@ Icon(
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: _onTabTapped,
@@ -868,7 +909,7 @@ Icon(
               selectedItemColor: AppTheme.primary,
               unselectedItemColor: AppTheme.systemGray,
               elevation: 0,
-              iconSize: 24,
+              iconSize: 22,
               items: [
                 BottomNavigationBarItem(
                   icon: Icon(_currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined),

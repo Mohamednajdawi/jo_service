@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../l10n/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../services/conversation_service.dart';
 import '../constants/theme.dart';
 import '../models/provider_model.dart';
 import '../widgets/location_picker.dart';
@@ -771,9 +772,11 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
                                                     width: 120,
                                                     height: 120,
                                                   )
-                                                : _currentProfilePictureUrl != null && _currentProfilePictureUrl!.isNotEmpty && _currentProfilePictureUrl!.startsWith('http')
+                                                : _currentProfilePictureUrl != null && _currentProfilePictureUrl!.isNotEmpty
                                                     ? Image.network(
-                                                        _currentProfilePictureUrl!,
+                                                        _currentProfilePictureUrl!.startsWith('http')
+                                                            ? _currentProfilePictureUrl!
+                                                            : '${ConversationService.baseImageUrl}${_currentProfilePictureUrl!.startsWith('/') ? '' : '/'}${_currentProfilePictureUrl!}',
                                                         fit: BoxFit.cover,
                                                         width: 120,
                                                         height: 120,
