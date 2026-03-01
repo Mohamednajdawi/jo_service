@@ -343,110 +343,6 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                       
                       const SizedBox(height: 48),
                       
-                      // Social Login Section
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: isDark 
-                              ? const Color(0xFF1C1C1E) 
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              offset: const Offset(0, 4),
-                              blurRadius: 16,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Continue with',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: isDark 
-                                    ? const Color(0xFF8E8E93) 
-                                    : const Color(0xFF6B7280),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: OutlinedButton.icon(
-                                onPressed: _isLoading ? null : _handleGoogleLogin,
-                                icon: const Icon(
-                                  Icons.g_mobiledata, 
-                                  color: Color(0xFFEA4335),
-                                  size: 24,
-                                ),
-                                label: Text(
-                                  'Google',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? Colors.white : const Color(0xFF000000),
-                                  ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: isDark 
-                                        ? const Color(0xFF38383A) 
-                                        : const Color(0xFFE5E7EB),
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Divider
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              color: isDark 
-                                  ? const Color(0xFF38383A) 
-                                  : const Color(0xFFE5E7EB),
-                              thickness: 1,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'or sign in with email',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: isDark 
-                                    ? const Color(0xFF8E8E93) 
-                                    : const Color(0xFF6B7280),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Divider(
-                              color: isDark 
-                                  ? const Color(0xFF38383A) 
-                                  : const Color(0xFFE5E7EB),
-                              thickness: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
                       // Email field
                       Container(
                         decoration: BoxDecoration(
@@ -751,6 +647,47 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                                     letterSpacing: 0.5,
                                   ),
                                 ),
+                        ),
+                      ),
+                    
+                      const SizedBox(height: 32),
+                    
+                      // Google login — circle with G only
+                      Center(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _isLoading ? null : _handleGoogleLogin,
+                            borderRadius: BorderRadius.circular(28),
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1C1C1E)
+                                    : Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF38383A)
+                                      : const Color(0xFFE5E7EB),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.g_mobiledata,
+                                color: Color(0xFFEA4335),
+                                size: 28,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     
