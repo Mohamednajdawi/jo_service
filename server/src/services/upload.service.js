@@ -21,24 +21,38 @@ const storage = multer.diskStorage({
   }
 });
 
+// File filter: accept images including HEIC and octet-stream (iOS compatibility)
+const allowedMimeTypes = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/bmp',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'application/octet-stream'
+];
+const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic', '.heif'];
+
+const fileFilter = (req, file, cb) => {
+  const fileExt = path.extname(file.originalname).toLowerCase();
+  const isMimeOk = allowedMimeTypes.includes((file.mimetype || '').toLowerCase());
+  const isExtOk = allowedExtensions.includes(fileExt);
+  if (isMimeOk || isExtOk || (file.mimetype && file.mimetype.startsWith('image/'))) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
 // Create multer middleware with file filtering
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB max file size
   },
-  fileFilter: function(req, file, cb) {
-    // Check file type
-    const allowedFileTypes = /jpeg|jpg|png|gif/;
-    const ext = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedFileTypes.test(file.mimetype);
-    
-    if (ext && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files (jpeg, jpg, png, gif) are allowed!'));
-    }
-  }
+  fileFilter
 });
 
 module.exports = { upload }; 

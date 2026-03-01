@@ -79,8 +79,11 @@ const UserController = {
 
     // POST /api/users/me/profile-picture - Upload profile picture
     async uploadProfilePicture(req, res) {
-        const userId = req.auth.id;
+        const userId = req.auth && req.auth.id ? String(req.auth.id) : null;
 
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID not found in token.' });
+        }
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
@@ -95,19 +98,26 @@ const UserController = {
                 userId,
                 { $set: { profilePictureUrl: fileUrl } },
                 { new: true, runValidators: true }
-            ).select('-password');
+            ).select('-password')
+            .lean();
 
             if (!user) {
                 return res.status(404).json({ message: 'User not found.' });
             }
 
-            res.status(200).json({ 
-                message: 'Profile picture uploaded successfully', 
+            res.status(200).json({
+                message: 'Profile picture uploaded successfully',
                 profilePictureUrl: fileUrl,
-                user 
+                user
             });
         } catch (error) {
             console.error('Error uploading profile picture:', error);
+            if (error.name === 'CastError') {
+                return res.status(400).json({ message: 'Invalid user ID.', error: error.message });
+            }
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({ message: 'Validation failed', errors: error.errors });
+            }
             res.status(500).json({ message: 'Failed to upload profile picture', error: error.message });
         }
     },

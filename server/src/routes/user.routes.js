@@ -12,7 +12,17 @@ router.get('/me', protectRoute, isUser, UserController.getMyProfile);
 router.put('/me', protectRoute, isUser, UserController.updateMyProfile);
 
 // POST /api/users/me/profile-picture - Upload profile picture
-router.post('/me/profile-picture', protectRoute, isUser, upload.single('profilePicture'), UserController.uploadProfilePicture);
+router.post('/me/profile-picture', protectRoute, isUser, (req, res, next) => {
+  upload.single('profilePicture')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
+      }
+      return res.status(400).json({ message: err.message || 'Invalid file. Only image files are allowed.' });
+    }
+    next();
+  });
+}, UserController.uploadProfilePicture);
 
 // DELETE /api/users/me - Delete user account
 router.delete('/me', protectRoute, isUser, UserController.deleteMyAccount);
