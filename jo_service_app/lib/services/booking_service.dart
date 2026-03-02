@@ -371,6 +371,34 @@ class BookingService {
     }
   }
 
+  // Reschedule an existing booking (change only serviceDateTime)
+  Future<Booking> rescheduleBooking({
+    required String token,
+    required String bookingId,
+    required DateTime serviceDateTime,
+  }) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$_baseUrl/$bookingId/reschedule'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'serviceDateTime': serviceDateTime.toUtc().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return Booking.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Failed to reschedule booking: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error rescheduling booking: $e');
+    }
+  }
+
   // Fetch all bookings directly (not relying on token's user ID)
   Future<List<Booking>> fetchAllBookingsForTests({
     required String token,

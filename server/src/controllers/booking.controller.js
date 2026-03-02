@@ -386,6 +386,59 @@ const BookingController = {
         }
     },
 
+    // PATCH /api/bookings/:id/reschedule - User postpones a booking (change date/time only)
+    async rescheduleBooking(req, res) {
+        const bookingId = req.params.id;
+        const { serviceDateTime } = req.body;
+        const userId = req.auth.id;
+        const userType = req.auth.type;
+
+        if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+            return res.status(400).json({ message: 'Invalid Booking ID format' });
+        }
+
+        if (!serviceDateTime) {
+            return res.status(400).json({ message: 'New serviceDateTime is required to reschedule a booking.' });
+        }
+
+        try {
+            const booking = await Booking.findById(bookingId)
+                .populate('user', 'fullName email profilePictureUrl')
+                .populate('provider', 'fullName email serviceType profilePictureUrl averageRating');
+
+            if (!booking) {
+                return res.status(404).json({ message: 'Booking not found.' });
+            }
+
+            // Only the owning user can reschedule their booking
+            if (userType !== 'user' || booking.user._id.toString() !== userId.toString()) {
+                return res.status(403).json({ message: 'Forbidden: You can only reschedule your own bookings.' });
+            }
+
+            // Disallow rescheduling for completed/cancelled/paid bookings
+            const forbiddenStatuses = ['completed', 'cancelled_by_user', 'declined_by_provider', 'paid', 'payment_due'];
+            if (forbiddenStatuses.includes(booking.status)) {
+                return res.status(400).json({ message: `Cannot reschedule a booking with status '${booking.status}'.` });
+            }
+
+            // Update only the serviceDateTime; keep all other details and photos
+            booking.serviceDateTime = new Date(serviceDateTime);
+            const updatedBooking = await booking.save();
+
+            const populatedBooking = await Booking.findById(updatedBooking._id)
+                .populate('user', 'fullName email profilePictureUrl')
+                .populate('provider', 'fullName email serviceType profilePictureUrl averageRating');
+
+            return res.status(200).json(populatedBooking);
+        } catch (error) {
+            console.error('Error rescheduling booking:', error);
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({ message: 'Validation Error', errors: error.errors });
+            }
+            res.status(500).json({ message: 'Failed to reschedule booking', error: error.message });
+        }
+    },
+
     // Add a test method to fetch all bookings (temporary, for debugging)
     async getAllBookingsForTest(req, res) {
         try {

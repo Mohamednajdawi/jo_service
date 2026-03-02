@@ -13,7 +13,6 @@ import '../utils/service_type_localizer.dart';
 import '../utils/booking_photo_url.dart';
 import '../widgets/full_screen_image_viewer.dart';
 import './multi_criteria_rating_screen.dart';
-
 class BookingDetailScreen extends StatefulWidget {
   final String bookingId;
   static const routeName = '/booking-detail';
@@ -143,6 +142,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               content: Text(
                   AppLocalizations.of(context)!.bookingActionSuccessfully(_getStatusActionText(newStatus)))),
         );
+        _loadBookingDetails();
       }
     } catch (e) {
       if (mounted) {
@@ -562,8 +562,112 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     }
   }
 
+  Future<void> _postponeBooking() async {
+    if (_booking == null || _booking!.provider == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.providerInformationNotAvailable),
+        ),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final current = _booking!.serviceDateTime.isAfter(now)
+        ? _booking!.serviceDateTime
+        : now.add(const Duration(days: 1));
+
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: current,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (pickedDate == null) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_booking!.serviceDateTime),
+    );
+    if (pickedTime == null) return;
+
+    final newDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final token = await authService.getToken();
+
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    AppLocalizations.of(context)!.authenticationErrorPleaseLogin)),
+          );
+        }
+        return;
+      }
+
+      final updated = await _bookingService.rescheduleBooking(
+        token: token,
+        bookingId: widget.bookingId,
+        serviceDateTime: newDateTime,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _booking = updated;
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.bookingActionSuccessfully(
+              AppLocalizations.of(context)!.updated,
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${AppLocalizations.of(context)!.errorUpdatingBookingStatus}: $e',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleMenuAction(String value) {
+    if (value == 'cancel') {
+      _showConfirmationDialog('cancel', 'cancelled_by_user');
+    } else if (value == 'postpone') {
+      _postponeBooking();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final formattedDate = _booking != null
         ? DateFormat('EEEE, MMM dd, yyyy').format(_booking!.serviceDateTime)
         : '';
@@ -573,11 +677,31 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.bookingDetails),
+        title: Text(l10n.bookingDetails),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          if (_booking != null &&
+              _userType == 'user' &&
+              ['pending', 'accepted', 'in_progress'].contains(_booking!.status))
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
+              onSelected: _handleMenuAction,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+|
+                  value: 'cancel',
+                  child: Text(l10n.cancelBooking),
+                ),
+                const PopupMenuItem(
+                  value: 'postpone',
+                  child: Text('Postpone booking'),
+                ),
+              ],
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

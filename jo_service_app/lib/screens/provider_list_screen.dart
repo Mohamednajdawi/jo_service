@@ -604,6 +604,25 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
         backgroundColor: AppTheme.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.tune, color: AppTheme.primary),
+          tooltip: AppLocalizations.of(context)!.advancedSearch,
+          onPressed: () async {
+            final result = await Navigator.push<SearchFilters>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AdvancedSearchScreen(
+                  initialSearch: _searchQuery.isNotEmpty ? _searchQuery : null,
+                  initialLocation: _selectedLocation.isNotEmpty ? _selectedLocation : null,
+                  onFiltersApplied: null, // We'll handle the result via the return value
+                ),
+              ),
+            );
+            if (result != null) {
+              _applyAdvancedFilters(result);
+            }
+          },
+        ),
         title: Text(
           _selectedLocation.isNotEmpty
               ? AppLocalizations.of(context)!.providersIn(_selectedLocation)
@@ -615,24 +634,9 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.tune, color: AppTheme.primary),
-            tooltip: AppLocalizations.of(context)!.advancedSearch,
-            onPressed: () async {
-              final result = await Navigator.push<SearchFilters>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AdvancedSearchScreen(
-                    initialSearch: _searchQuery.isNotEmpty ? _searchQuery : null,
-                    initialLocation: _selectedLocation.isNotEmpty ? _selectedLocation : null,
-                    onFiltersApplied: null, // We'll handle the result via the return value
-                  ),
-                ),
-              );
-              
-              if (result != null) {
-                _applyAdvancedFilters(result);
-              }
-            },
+            icon: Icon(Icons.refresh, color: AppTheme.dark),
+            tooltip: AppLocalizations.of(context)!.refreshList,
+            onPressed: () => _loadProviders(resetPage: true),
           ),
           if (_hasActiveFilters())
             IconButton(
@@ -640,17 +644,11 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
               tooltip: AppLocalizations.of(context)!.clearFilters,
               onPressed: _clearFilters,
             ),
-          IconButton(
-            icon: Icon(Icons.refresh, color: AppTheme.dark),
-            tooltip: AppLocalizations.of(context)!.refreshList,
-            onPressed: () => _loadProviders(resetPage: true),
-          ),
           if (_selectedLocation.isNotEmpty)
             IconButton(
               icon: Icon(Icons.location_on, color: AppTheme.primary),
               tooltip: AppLocalizations.of(context)!.cityLabel(_selectedLocation),
               onPressed: () {
-                // Show location selection dialog
                 _showLocationSelectionDialog();
               },
             ),

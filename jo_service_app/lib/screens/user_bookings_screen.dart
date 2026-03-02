@@ -285,7 +285,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
       l10n.completed,
       l10n.declined,
       l10n.cancelled,
-    ];;
+    ];
     return Scaffold(
       backgroundColor: AppTheme.light,
       appBar: AppBar(
@@ -299,13 +299,15 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          padding: const EdgeInsets.only(left: 16),
           labelColor: AppTheme.primary,
           unselectedLabelColor: AppTheme.grey,
           indicatorColor: AppTheme.primary,
           indicatorWeight: 3,
           labelStyle: AppTheme.h4.copyWith(fontWeight: FontWeight.bold),
           unselectedLabelStyle: AppTheme.h4,
-                      tabs: tabLabels
+          tabs: tabLabels
               .map((label) => Tab(
                     text: label,
                   ))

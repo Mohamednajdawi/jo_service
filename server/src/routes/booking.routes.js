@@ -23,9 +23,6 @@ router.get('/by-user/:userId', protectRoute, BookingController.getBookingsByUser
 // SPECIAL DEBUG ROUTE - Get bookings for a specific provider ID
 router.get('/by-provider/:providerId', protectRoute, BookingController.getBookingsByProviderId);
 
-// SPECIAL DEBUG ROUTE - Reassign a booking to a different provider
-router.patch('/:id/reassign', protectRoute, BookingController.reassignBooking);
-
 // GET /api/bookings/:id - Get a specific booking (user or provider)
 // protectRoute ensures logged in, controller logic verifies ownership
 router.get('/:id', protectRoute, BookingController.getBookingById);
@@ -33,5 +30,11 @@ router.get('/:id', protectRoute, BookingController.getBookingById);
 // PATCH /api/bookings/:id/status - Update booking status (user or provider)
 // protectRoute ensures logged in, controller logic verifies ownership and transition rules
 router.patch('/:id/status', protectRoute, BookingController.updateBookingStatus);
+
+// PATCH /api/bookings/:id/reschedule - User postpones a booking (update date/time only)
+router.patch('/:id/reschedule', protectRoute, isUser, BookingController.rescheduleBooking);
+
+// SPECIAL DEBUG ROUTE - Reassign a booking to a different provider
+router.patch('/:id/reassign', protectRoute, BookingController.reassignBooking);
 
 module.exports = router; 

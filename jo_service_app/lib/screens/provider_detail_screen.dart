@@ -66,7 +66,10 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.providerDetails),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: FutureBuilder<Provider?>(
         future: _providerFuture,

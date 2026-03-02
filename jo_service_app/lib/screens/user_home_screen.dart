@@ -291,21 +291,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     
     return CustomScrollView(
       slivers: [
-        // Clean minimal header (white, no gradient)
-        SliverToBoxAdapter(
-          child: Container(
-            color: isDark ? AppTheme.dark : AppTheme.white,
+        // Fixed top header (logo + title + chat), pinned while scrolling
+        SliverAppBar(
+          pinned: true,
+          floating: false,
+          elevation: 0,
+          backgroundColor: isDark ? AppTheme.dark : AppTheme.white,
+          automaticallyImplyLeading: false,
+          expandedHeight: MediaQuery.of(context).padding.top,
+          flexibleSpace: Container(
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 12,
               left: 20,
               right: 20,
-              bottom: 20,
+              bottom: 12,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -313,39 +319,25 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       children: [
                         SvgPicture.asset(
                           'assets/jo_logo.svg',
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Text(
                           l10n.appTitle,
                           style: TextStyle(
                             color: isDark ? AppTheme.white : AppTheme.black,
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.5,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.appBrandSubtitle,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: (isDark ? AppTheme.white : AppTheme.black).withOpacity(0.6),
-                      ),
-                    ),
                   ],
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    color: isDark ? AppTheme.white : Colors.black87,
-                    size: 24,
-                  ),
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -353,29 +345,43 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                     );
                   },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      color: isDark ? AppTheme.white : Colors.black87,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
-        
-        // Main content
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                _buildWelcomeCard(isDark),
-                const SizedBox(height: 32),
-                _buildHighValueContent(l10n, isDark),
-                const SizedBox(height: 32),
-                _buildCases(l10n, isDark),
-                const SizedBox(height: 24),
-                _buildStatsCard(isDark),
-                const SizedBox(height: 24),
-              ],
+
+        // Main content under the fixed header (SliverSafeArea adds bottom inset for home indicator)
+        SliverSafeArea(
+          top: false,
+          left: false,
+          right: false,
+          bottom: true,
+          sliver: SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  _buildWelcomeCard(isDark),
+                  const SizedBox(height: 32),
+                  _buildHighValueContent(l10n, isDark),
+                  const SizedBox(height: 32),
+                  _buildCases(l10n, isDark),
+                  const SizedBox(height: 24),
+                  _buildStatsCard(isDark),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),
@@ -637,7 +643,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 140,
+          height: 175,
           child: _isLoadingActivity
               ? const Center(
                   child: CircularProgressIndicator(
@@ -646,31 +652,36 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 )
               : _recentBookings.isEmpty
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.folder_open_outlined,
-                            size: 48,
-                            color: AppTheme.systemGray,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.noCasesYet,
-                            style: TextStyle(
-                              color: AppTheme.systemGray,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.bookServiceToSeeCases,
-                            style: TextStyle(
-                              fontSize: 12,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.folder_open_outlined,
+                              size: 48,
                               color: AppTheme.systemGray,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.noCasesYet,
+                              style: TextStyle(
+                                color: AppTheme.systemGray,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.bookServiceToSeeCases,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.systemGray,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : ListView.builder(
