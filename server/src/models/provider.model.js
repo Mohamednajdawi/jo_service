@@ -58,7 +58,7 @@ const locationSchema = new Schema({
     country: {
         type: String,
         trim: true,
-        default: 'US'
+        default: 'Jordan'
     }
 });
 
@@ -252,7 +252,7 @@ providerSchema.methods.updateLocation = async function(locationData) {
         city: locationData.city,
         state: locationData.state,
         zipCode: locationData.zipCode,
-        country: locationData.country || 'US'
+        country: locationData.country || 'Jordan'
     };
     
     return await this.save();

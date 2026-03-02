@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/booking_model.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
+import '../services/conversation_service.dart';
 import '../constants/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
@@ -423,15 +424,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
                   Expanded(
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: color.withOpacity(0.2),
-                          radius: 20,
-                          child: Icon(
-                            _getServiceIcon(booking.provider?.serviceType),
-                            color: color,
-                            size: 20,
-                          ),
-                        ),
+                        _buildProviderAvatar(booking, color),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -564,6 +557,38 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProviderAvatar(Booking booking, Color fallbackColor) {
+    final provider = booking.provider;
+    final hasImage = provider?.profilePictureUrl != null &&
+        provider!.profilePictureUrl!.trim().isNotEmpty;
+
+    String? imageUrl;
+    if (hasImage) {
+      final raw = provider!.profilePictureUrl!.trim();
+      imageUrl = raw.startsWith('http')
+          ? raw
+          : '${ConversationService.baseImageUrl}${raw.startsWith('/') ? '' : '/'}$raw';
+    }
+
+    if (hasImage && imageUrl != null) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(imageUrl),
+        backgroundColor: Colors.grey[200],
+      );
+    }
+
+    return CircleAvatar(
+      backgroundColor: fallbackColor.withOpacity(0.2),
+      radius: 20,
+      child: Icon(
+        _getServiceIcon(booking.provider?.serviceType),
+        color: fallbackColor,
+        size: 20,
       ),
     );
   }

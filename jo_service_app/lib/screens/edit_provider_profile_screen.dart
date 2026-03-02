@@ -366,7 +366,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen>
             'coordinates': [_longitude!, _latitude!],
             'address': _selectedAddress.isNotEmpty ? _selectedAddress : _addressController.text.trim(),
             'city': 'Amman', // Default city
-            'country': 'US'
+            'country': 'Jordan'
           });
           print('📍 Location coordinates updated successfully');
           print('📍 Location response: $locationUpdateResponse');

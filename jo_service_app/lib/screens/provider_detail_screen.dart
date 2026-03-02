@@ -5,6 +5,7 @@ import '../models/chat_conversation.dart';
 import 'package:provider/provider.dart' as ctx; // Alias for provider package
 import '../services/auth_service.dart'; // To get token for API calls
 import '../services/conversation_service.dart';
+import '../widgets/full_screen_image_viewer.dart';
 import './chat_screen.dart'; // For chat navigation
 import './create_booking_screen.dart'; // For booking navigation
 import '../l10n/app_localizations.dart';
@@ -242,14 +243,23 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
         : provider.profilePictureUrl;
 
     if (hasImage && imageUrl != null) {
-      return ClipOval(
-        child: SizedBox(
-          width: 100,
-          height: 100,
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildInitialsPlaceholder(provider),
+      return GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => FullScreenImageViewer(imageUrl: imageUrl),
+            ),
+          );
+        },
+        child: ClipOval(
+          child: SizedBox(
+            width: 100,
+            height: 100,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildInitialsPlaceholder(provider),
+            ),
           ),
         ),
       );

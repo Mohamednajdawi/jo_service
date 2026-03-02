@@ -634,17 +634,47 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       ),
                       const SizedBox(height: 8),
                       ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage:
-                              _booking!.provider?.profilePictureUrl != null &&
-                                      _booking!.provider!.profilePictureUrl!
-                                          .isNotEmpty
-                                  ? NetworkImage(_booking!.provider!.profilePictureUrl!.startsWith('http')
-                                      ? _booking!.provider!.profilePictureUrl!
-                                      : '${ConversationService.baseImageUrl}${_booking!.provider!.profilePictureUrl!.startsWith('/') ? '' : '/'}${_booking!.provider!.profilePictureUrl!}')
-                                  : const AssetImage('assets/default_user.png')
-                                      as ImageProvider,
-                          backgroundColor: Colors.grey[200],
+                        leading: Builder(
+                          builder: (context) {
+                            final hasProviderImage =
+                                _booking!.provider?.profilePictureUrl != null &&
+                                    _booking!.provider!.profilePictureUrl!
+                                        .isNotEmpty;
+                            String? providerImageUrl;
+                            if (hasProviderImage) {
+                              final raw = _booking!.provider!.profilePictureUrl!;
+                              providerImageUrl = raw.startsWith('http')
+                                  ? raw
+                                  : '${ConversationService.baseImageUrl}${raw.startsWith('/') ? '' : '/'}$raw';
+                            }
+                            final ImageProvider avatarImage = hasProviderImage &&
+                                    providerImageUrl != null
+                                ? NetworkImage(providerImageUrl)
+                                : const AssetImage('assets/default_user.png')
+                                    as ImageProvider;
+
+                            final avatar = CircleAvatar(
+                              backgroundImage: avatarImage,
+                              backgroundColor: Colors.grey[200],
+                            );
+
+                            if (!hasProviderImage || providerImageUrl == null) {
+                              return avatar;
+                            }
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => FullScreenImageViewer(
+                                      imageUrl: providerImageUrl!,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: avatar,
+                            );
+                          },
                         ),
                         title: Text(
                             _booking!.provider?.fullName ?? AppLocalizations.of(context)!.unknownProvider),

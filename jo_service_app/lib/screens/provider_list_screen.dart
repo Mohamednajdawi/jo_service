@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as ctxProvider;
 import '../models/provider_model.dart';
+import '../services/conversation_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../constants/theme.dart';
@@ -1136,6 +1137,34 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   }
 
   Widget _buildProviderAvatar(Provider provider) {
+    final hasImage = provider.profilePictureUrl != null &&
+        provider.profilePictureUrl!.trim().isNotEmpty;
+    String? imageUrl;
+    if (hasImage) {
+      final raw = provider.profilePictureUrl!.trim();
+      imageUrl = raw.startsWith('http')
+          ? raw
+          : '${ConversationService.baseImageUrl}${raw.startsWith('/') ? '' : '/'}$raw';
+    }
+
+    if (hasImage && imageUrl != null) {
+      return ClipOval(
+        child: SizedBox(
+          width: 60,
+          height: 60,
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _buildInitialsAvatar(provider),
+          ),
+        ),
+      );
+    }
+
+    return _buildInitialsAvatar(provider);
+  }
+
+  Widget _buildInitialsAvatar(Provider provider) {
     return Container(
       width: 60,
       height: 60,

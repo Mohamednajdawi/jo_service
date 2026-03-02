@@ -195,7 +195,7 @@ const ProviderController = {
                 city: currentProvider.location?.city || '',
                 state: currentProvider.location?.state || '',
                 zipCode: currentProvider.location?.zipCode || '',
-                country: currentProvider.location?.country || 'US'
+                country: currentProvider.location?.country || 'Jordan'
             };
 
             // Handle simple address string update
@@ -780,7 +780,7 @@ const ProviderController = {
                 city,
                 state,
                 zipCode,
-                country: country || 'US'
+                country: country || 'Jordan'
             };
             
             const updatedProvider = await provider.save();
