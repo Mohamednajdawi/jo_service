@@ -687,11 +687,15 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               _userType == 'user' &&
               ['pending', 'accepted', 'in_progress'].contains(_booking!.status))
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
+              icon: Icon(
+                Icons.more_vert,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
+              ),
               onSelected: _handleMenuAction,
               itemBuilder: (context) => [
                 PopupMenuItem(
-|
                   value: 'cancel',
                   child: Text(l10n.cancelBooking),
                 ),
