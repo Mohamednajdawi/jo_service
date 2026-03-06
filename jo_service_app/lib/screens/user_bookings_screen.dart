@@ -276,16 +276,6 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
-    // Tab labels with localization support
-    final List<String> tabLabels = [
-      l10n.all,
-      l10n.pending,
-      l10n.accepted,
-      l10n.inProgress,
-      l10n.completed,
-      l10n.declined,
-      l10n.cancelled,
-    ];
     return Scaffold(
       backgroundColor: AppTheme.light,
       appBar: AppBar(
@@ -296,33 +286,11 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
           l10n.myBookings,
           style: AppTheme.h3.copyWith(color: AppTheme.dark),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          padding: const EdgeInsets.only(left: 16),
-          labelColor: AppTheme.primary,
-          unselectedLabelColor: AppTheme.grey,
-          indicatorColor: AppTheme.primary,
-          indicatorWeight: 3,
-          labelStyle: AppTheme.h4.copyWith(fontWeight: FontWeight.bold),
-          unselectedLabelStyle: AppTheme.h4,
-          tabs: tabLabels
-              .map((label) => Tab(
-                    text: label,
-                  ))
-              .toList(),
-        ),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchBookings,
         color: AppTheme.primary,
-        child: TabBarView(
-          controller: _tabController,
-          children: _statusFilters.map((status) {
-            return _buildBookingsList(l10n);
-          }).toList(),
-        ),
+        child: _buildBookingsList(l10n),
       ),
     );
   }
@@ -391,6 +359,7 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
       'declined_by_provider': l10n.declined,
       'cancelled_by_user': l10n.cancelled,
     };
+    final hourlyRate = booking.provider?.hourlyRate;
 
     final color = statusColors[booking.status] ?? AppTheme.grey;
     final label = statusLabels[booking.status] ?? l10n.unknownStatus;
@@ -520,19 +489,28 @@ class _UserBookingsScreenState extends State<UserBookingsScreen>
 
               // Price
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.attach_money, size: 16, color: AppTheme.grey),
-                  const SizedBox(width: 8),
-                  Text(
-                    '\$${booking.provider?.hourlyRate?.toStringAsFixed(2) ?? 'N/A'}',
-                    style: AppTheme.body4.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primary,
+              if (hourlyRate != null)
+                Row(
+                  children: [
+                    Icon(Icons.attach_money, size: 16, color: AppTheme.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      '\$${hourlyRate.toStringAsFixed(2)}',
+                      style: AppTheme.body4.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primary,
+                      ),
                     ),
+                  ],
+                )
+              else
+                Text(
+                  'Price pending',
+                  style: AppTheme.body4.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: AppTheme.grey,
                   ),
-                ],
-              ),
+                ),
 
               // Cancel button if applicable
               if (booking.status == 'pending' ||

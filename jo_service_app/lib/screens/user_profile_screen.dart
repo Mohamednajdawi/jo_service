@@ -5,11 +5,15 @@ import '../constants/api_config.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart' as ctxProvider;
+import 'package:url_launcher/url_launcher.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/conversation_service.dart';
 import '../services/theme_service.dart';
+import '../services/saved_locations_service.dart';
+import '../services/favorites_service.dart';
+import 'favorites_screen.dart';
 import '../services/locale_service.dart';
 import '../l10n/app_localizations.dart';
 import './user_login_screen.dart';
@@ -54,13 +58,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final _fullNameController = TextEditingController();
   final _phoneNumberController = TextEditingController();
 
+  final SavedLocationsService _locationsService = SavedLocationsService();
+  List<SavedLocation> _savedLocations = [];
+  final FavoritesService _favoritesService = FavoritesService();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _loadProfile();
+        _loadSavedLocations();
       }
+    });
+  }
+
+  Future<void> _loadSavedLocations() async {
+    final locations = await _locationsService.getLocations();
+    if (!mounted) return;
+    setState(() {
+      _savedLocations = locations;
     });
   }
 
@@ -408,6 +425,76 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
       }
     }
+  }
+
+  Future<void> _showAddLocationDialog() async {
+    final labelController = TextEditingController();
+    final addressController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Add location'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: labelController,
+                decoration: const InputDecoration(
+                  labelText: 'Label (e.g. Home, Office)',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: addressController,
+                decoration: const InputDecoration(
+                  labelText: 'Address',
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () async {
+                final label = labelController.text.trim();
+                final address = addressController.text.trim();
+                if (label.isEmpty || address.isEmpty) {
+                  return;
+                }
+                final newLocation = SavedLocation(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  label: label,
+                  address: address,
+                );
+                final updated = [..._savedLocations, newLocation];
+                await _locationsService.saveLocations(updated);
+                if (!mounted) return;
+                setState(() {
+                  _savedLocations = updated;
+                });
+                Navigator.of(ctx).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.save),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _removeLocation(String id) async {
+    final updated = _savedLocations.where((loc) => loc.id != id).toList();
+    await _locationsService.saveLocations(updated);
+    if (!mounted) return;
+    setState(() {
+      _savedLocations = updated;
+    });
   }
 
   Widget _buildProfileNetworkImage(String? profilePictureUrl) {
@@ -1000,6 +1087,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         );
                       },
+                    ),
+                    _buildSettingsTile(
+                      icon: Icons.help_outline,
+                      title: l10n.helpSupport,
+                      subtitle: l10n.contactSupportDescription,
+                      trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.grey),
+                      onTap: () {
+                        // For now, open support email draft
+                        final uri = Uri(
+                          scheme: 'mailto',
+                          path: 'support@joservice.app',
+                          query: Uri.encodeFull(
+                            'subject=JO Service Support&body=Describe your issue (booking ID, provider name, etc.)',
+                          ),
+                        );
+                        launchUrl(uri);
+                      },
                       isLast: true,
                     ),
                   ],
@@ -1046,8 +1150,57 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           );
                         }
                       },
+                    ),
+                    _buildSettingsTile(
+                      icon: Icons.favorite_border,
+                      title: l10n.favoriteProviders,
+                      subtitle: l10n.addServiceProvidersToFavorites,
+                      trailing: Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.grey),
+                      onTap: () async {
+                        final ids =
+                            await _favoritesService.getFavoriteProviderIds();
+                        if (!mounted) return;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FavoritesScreen(
+                              favoriteProviderIds: ids,
+                              showAppBar: true,
+                            ),
+                          ),
+                        );
+                      },
                       isLast: true,
                     ),
+                  ],
+                ),
+
+                // Saved Locations Section
+                _buildAppleStyleCard(
+                  children: [
+                    _buildSettingsTile(
+                      icon: Icons.location_city_outlined,
+                      title: 'Saved locations',
+                      subtitle: _savedLocations.isEmpty
+                          ? 'Add home, office and more'
+                          : '${_savedLocations.length} locations saved',
+                      trailing: Icon(Icons.add, size: 18, color: AppTheme.primary),
+                      onTap: _showAddLocationDialog,
+                    ),
+                    if (_savedLocations.isNotEmpty)
+                      ..._savedLocations.map(
+                        (location) => _buildSettingsTile(
+                          icon: Icons.place_outlined,
+                          title: location.label,
+                          subtitle: location.address,
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                size: 18, color: AppTheme.danger),
+                            onPressed: () => _removeLocation(location.id),
+                          ),
+                          isLast: location == _savedLocations.last,
+                        ),
+                      ),
                   ],
                 ),
                 

@@ -731,7 +731,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            DateFormat('MMM dd, yyyy • hh:mm a').format(booking.serviceDateTime),
+                            '${DateFormat('MMM d, yyyy').format(booking.serviceDateTime)} • ${DateFormat('h:mm a').format(booking.serviceDateTime)}',
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark ? Colors.white54 : const Color(0xFF8E8E93),

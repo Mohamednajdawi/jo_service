@@ -33,6 +33,8 @@
   "favorites": "Favorites",
   "settings": "Settings",
   "dashboard": "Dashboard",
+  "helpSupport": "Help & Support",
+  "contactSupportDescription": "Get help with bookings, payments, or providers",
   
   "findServices": "Find Services",
   "searchForServices": "Search for services...",
@@ -43,7 +45,7 @@
   "categories": "Categories",
   "viewAll": "View All",
   "more": "More",
-  "cases": "Cases",
+  "cases": "Recent jobs",
   "done": "Done",
   "noCasesYet": "No cases yet",
   "bookServiceToSeeCases": "Book a service to see your cases here",

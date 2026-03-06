@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as ctxProvider;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/provider_model.dart';
 import '../models/booking_model.dart';
@@ -14,6 +15,7 @@ import 'booking_detail_screen.dart';
 import 'provider_detail_screen.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
+import '../services/conversation_service.dart';
 import 'package:provider/provider.dart' as provider; // Import provider package
 
 class UserHomeScreen extends StatefulWidget {
@@ -36,13 +38,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   int _activeBookingsCount = 0;
   Booking? _nextUpcomingBooking;
   bool _isLoadingActivity = false;
+  bool _hasUnreadMessages = false;
 
   @override
   void initState() {
     super.initState();
     _loadRealData();
+    _loadUnreadMessagesCount();
   }
-  
+
+  Future<void> _loadUnreadMessagesCount() async {
+    try {
+      final authService = provider.Provider.of<AuthService>(context, listen: false);
+      final token = await authService.getToken();
+      if (token == null || token.isEmpty) return;
+      final conversations = await ConversationService().getConversations(token: token);
+      final hasUnread = conversations.any((c) => (c.unreadCount) > 0);
+      if (mounted) setState(() => _hasUnreadMessages = hasUnread);
+    } catch (_) {
+      // Leave _hasUnreadMessages false if API fails or no conversations
+    }
+  }
+
   Future<void> _loadRealData() async {
     setState(() {
       _isLoadingActivity = true;
@@ -235,6 +252,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               onGenerateRoute: _generateTabRoute,
               initialRoute: '/bookings',
             ),
+            const UserChatsScreen(),
             Navigator(
               onGenerateRoute: _generateTabRoute,
               initialRoute: '/profile',
@@ -274,9 +292,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   void _onTabTapped(int index) {
     setState(() {
       _currentIndex = index;
+      if (index == 3) _hasUnreadMessages = false; // Clear dot when opening Messages
     });
     if (index == 0) {
       _loadRealData();
+      _loadUnreadMessagesCount(); // Refresh message badge when returning to Home
     }
     _pageController.animateToPage(
       index,
@@ -417,8 +437,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final b = _nextUpcomingBooking!;
     final providerName = b.provider?.fullName ?? l10n.provider;
     final serviceType = _getLocalizedServiceType(b.provider?.serviceType, l10n);
-    final formattedDate = '${b.serviceDateTime.day}/${b.serviceDateTime.month}/${b.serviceDateTime.year}';
-    final formattedTime = '${b.serviceDateTime.hour.toString().padLeft(2, '0')}:${b.serviceDateTime.minute.toString().padLeft(2, '0')}';
+    final formattedDate = DateFormat('MMM d, yyyy').format(b.serviceDateTime);
+    final formattedTime = DateFormat('h:mm a').format(b.serviceDateTime);
 
     return GestureDetector(
       onTap: () {
@@ -472,7 +492,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
@@ -610,8 +630,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   static bool _isCaseDone(String status) {
-    return status == 'completed' || status == 'paid' ||
-        status == 'declined_by_provider' || status == 'cancelled_by_user';
+    return status == 'completed' || status == 'paid';
+  }
+
+  static bool _isCancelled(String status) {
+    return status == 'cancelled_by_user' || status == 'declined_by_provider';
   }
 
   Widget _buildCases(AppLocalizations l10n, bool isDark) {
@@ -703,9 +726,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _buildCaseCard(Booking booking, AppLocalizations l10n, bool isDark) {
     final isDone = _isCaseDone(booking.status);
+    final isCancelled = _isCancelled(booking.status);
     final providerName = booking.provider?.fullName ?? l10n.provider;
     final serviceType = _getLocalizedServiceType(booking.provider?.serviceType, l10n);
-    final dateStr = '${booking.serviceDateTime.day}/${booking.serviceDateTime.month}/${booking.serviceDateTime.year}';
+    final dateStr = DateFormat('MMM d, yyyy').format(booking.serviceDateTime);
+
+    final statusColor = isCancelled
+        ? AppTheme.danger
+        : (isDone ? const Color(0xFF34C759) : AppTheme.primary);
+    final statusLabel = isCancelled
+        ? l10n.cancelledBookings
+        : (isDone ? l10n.done : l10n.pending);
+    final statusIcon = isCancelled
+        ? Icons.cancel_rounded
+        : (isDone ? Icons.check_circle_rounded : Icons.schedule_rounded);
 
     return GestureDetector(
       onTap: () {
@@ -720,9 +754,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           color: isDark ? AppTheme.dark : AppTheme.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDone
-                ? const Color(0xFF34C759).withOpacity(0.25)
-                : AppTheme.primary.withOpacity(0.2),
+            color: statusColor.withOpacity(0.25),
             width: 1,
           ),
           boxShadow: [
@@ -742,32 +774,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: isDone
-                        ? const Color(0xFF34C759).withOpacity(0.15)
-                        : AppTheme.primary.withOpacity(0.12),
+                    color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
-                    isDone ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                    statusIcon,
                     size: 22,
-                    color: isDone ? const Color(0xFF34C759) : AppTheme.primary,
+                    color: statusColor,
                   ),
                 ),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isDone
-                        ? const Color(0xFF34C759).withOpacity(0.12)
-                        : AppTheme.primary.withOpacity(0.1),
+                    color: statusColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    isDone ? l10n.done : l10n.pending,
+                    statusLabel,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: isDone ? const Color(0xFF34C759) : AppTheme.primary,
+                      color: statusColor,
                     ),
                   ),
                 ),
@@ -781,7 +809,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 2),
@@ -850,6 +878,31 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     isDark: isDark,
                   ),
           ),
+          if (!_isLoadingActivity && _activeBookingsCount == 0) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _onTabTapped(1),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: AppTheme.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.navServices,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -891,8 +944,81 @@ Icon(
     );
   }
 
+  static const double _navIconSize = 22;
+  static const double _activeDotSize = 5;
+
   Widget _buildBottomNavigationBar(bool isDark) {
     final l10n = AppLocalizations.of(context)!;
+    final selectedColor = AppTheme.primary;
+    final unselectedColor = AppTheme.systemGray;
+
+    Widget navItem({
+      required int index,
+      required IconData icon,
+      required IconData iconOutlined,
+      required String label,
+      bool showBadge = false,
+    }) {
+      final isSelected = _currentIndex == index;
+      return Expanded(
+        child: InkWell(
+          onTap: () => _onTabTapped(index),
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    isSelected ? icon : iconOutlined,
+                    size: _navIconSize,
+                    color: isSelected ? selectedColor : unselectedColor,
+                  ),
+                  if (showBadge)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.danger,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? selectedColor : unselectedColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: isSelected ? _activeDotSize : 0,
+                height: isSelected ? _activeDotSize : 0,
+                decoration: BoxDecoration(
+                  color: isSelected ? selectedColor : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppTheme.dark : AppTheme.white,
@@ -904,38 +1030,42 @@ Icon(
         ),
       ),
       child: SafeArea(
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            bottomNavigationBarTheme: BottomNavigationBarThemeData(
-              backgroundColor: isDark ? AppTheme.dark : AppTheme.white,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: _onTabTapped,
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent,
-              selectedItemColor: AppTheme.primary,
-              unselectedItemColor: AppTheme.systemGray,
-              elevation: 0,
-              iconSize: 22,
-              items: [
-                BottomNavigationBarItem(
-                  icon: Icon(_currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                navItem(
+                  index: 0,
+                  icon: Icons.home_rounded,
+                  iconOutlined: Icons.home_outlined,
                   label: l10n.home,
                 ),
-BottomNavigationBarItem(
-                icon: Icon(_currentIndex == 1 ? Icons.search_rounded : Icons.search_rounded),
-                label: l10n.navServices,
-              ),
-                BottomNavigationBarItem(
-                  icon: Icon(_currentIndex == 2 ? Icons.calendar_month_rounded : Icons.calendar_month_outlined),
+                navItem(
+                  index: 1,
+                  icon: Icons.search_rounded,
+                  iconOutlined: Icons.search_rounded,
+                  label: l10n.navServices,
+                ),
+                navItem(
+                  index: 2,
+                  icon: Icons.calendar_month_rounded,
+                  iconOutlined: Icons.calendar_month_outlined,
                   label: l10n.bookings,
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(_currentIndex == 3 ? Icons.person_rounded : Icons.person_outline_rounded),
+                navItem(
+                  index: 3,
+                  icon: Icons.chat_bubble_rounded,
+                  iconOutlined: Icons.chat_bubble_outline_rounded,
+                  label: l10n.messages,
+                  showBadge: _hasUnreadMessages,
+                ),
+                navItem(
+                  index: 4,
+                  icon: Icons.person_rounded,
+                  iconOutlined: Icons.person_outline_rounded,
                   label: l10n.profile,
                 ),
               ],

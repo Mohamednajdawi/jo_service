@@ -215,6 +215,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             style: AppTheme.h3.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

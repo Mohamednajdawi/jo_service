@@ -93,6 +93,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get messages => 'الرسائل';
 
   @override
+  String get helpSupport => 'المساعدة والدعم';
+
+  @override
   String get favorites => 'المفضلة';
 
   @override

@@ -6,8 +6,11 @@ import 'package:provider/provider.dart' as ctx; // Alias for provider package
 import '../services/auth_service.dart'; // To get token for API calls
 import '../services/conversation_service.dart';
 import '../widgets/full_screen_image_viewer.dart';
+import '../widgets/multi_criteria_rating_display.dart';
 import './chat_screen.dart'; // For chat navigation
 import './create_booking_screen.dart'; // For booking navigation
+import '../services/rating_service.dart';
+import '../models/rating_model.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/service_type_localizer.dart';
 import '../constants/theme.dart';
@@ -27,6 +30,9 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
   final ApiService _apiService = ApiService();
   Future<Provider?>? _providerFuture; // Nullable as provider might not be found
   late AuthService _authService;
+  final RatingService _ratingService = RatingService();
+  ProviderRatingStats? _ratingStats;
+  bool _isLoadingRatings = false;
 
   @override
   void initState() {
@@ -36,6 +42,7 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _fetchProviderDetails();
+        _fetchRatingStats();
       }
     });
   }
@@ -59,6 +66,37 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
     setState(() {
       _providerFuture = _apiService.fetchProviderById(widget.providerId, token);
     });
+  }
+
+  Future<void> _fetchRatingStats() async {
+    try {
+      setState(() {
+        _isLoadingRatings = true;
+      });
+      final authService = ctx.Provider.of<AuthService>(context, listen: false);
+      final token = await authService.getToken();
+      if (token == null || token.isEmpty) {
+        setState(() {
+          _isLoadingRatings = false;
+        });
+        return;
+      }
+      final stats = await _ratingService.getProviderRatingStats(
+        token: token,
+        providerId: widget.providerId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _ratingStats = stats;
+        _isLoadingRatings = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingRatings = false;
+        });
+      }
+    }
   }
 
   @override
@@ -332,33 +370,29 @@ class _ProviderDetailScreenState extends State<ProviderDetailScreen> {
   }
 
   Widget _buildRatingSection(BuildContext context, Provider provider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (provider.averageRating != null && provider.averageRating! > 0) ...[
-          Icon(Icons.star, color: Colors.amber[600], size: 28),
-          const SizedBox(width: 8),
-          Text(
-            '${provider.averageRating!.toStringAsFixed(1)} ',
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            '(${provider.totalRatings} ${AppLocalizations.of(context)!.ratingsText})',
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: Colors.grey[600]),
-          ),
-        ] else
-          Text(
-            AppLocalizations.of(context)!.noRatingsYet,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontStyle: FontStyle.italic, color: Colors.grey[600]),
-          ),
-      ],
+    if (_isLoadingRatings) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: CircularProgressIndicator(color: AppTheme.primary),
+        ),
+      );
+    }
+
+    if (_ratingStats == null || _ratingStats!.totalRatings == 0) {
+      return Text(
+        AppLocalizations.of(context)!.noRatingsYet,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontStyle: FontStyle.italic,
+              color: Colors.grey[600],
+            ),
+      );
+    }
+
+    return MultiCriteriaRatingDisplay(
+      ratingStats: _ratingStats!,
+      showRecentReviews: true,
+      isCompact: false,
     );
   }
 }

@@ -94,6 +94,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messages => 'Messages';
 
   @override
+  String get helpSupport => 'Help & Support';
+
+  @override
   String get favorites => 'Favorites';
 
   @override
@@ -131,7 +134,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get more => 'More';
 
   @override
-  String get cases => 'Cases';
+  String get cases => 'Recent jobs';
 
   @override
   String get done => 'Done';

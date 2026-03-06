@@ -669,7 +669,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final formattedDate = _booking != null
-        ? DateFormat('EEEE, MMM dd, yyyy').format(_booking!.serviceDateTime)
+        ? DateFormat('MMM d, yyyy').format(_booking!.serviceDateTime)
         : '';
     final formattedTime = _booking != null
         ? DateFormat('hh:mm a').format(_booking!.serviceDateTime)
@@ -740,7 +740,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                                     ),
                                     if (_booking!.createdAt != null)
                                       Text(
-                                        '${AppLocalizations.of(context)!.pending} ${DateFormat('MMM dd, yyyy').format(_booking!.createdAt!)}',
+                                        '${AppLocalizations.of(context)!.pending} ${DateFormat('MMM d, yyyy').format(_booking!.createdAt!)}',
                                         style:
                                             TextStyle(color: AppTheme.grey),
                                       ),

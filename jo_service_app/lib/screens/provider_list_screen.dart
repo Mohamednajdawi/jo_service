@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as ctxProvider;
 import '../models/provider_model.dart';
 import '../services/conversation_service.dart';
+import '../services/favorites_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../constants/theme.dart';
@@ -34,6 +35,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   late Future<ProviderListResponse> _providersFuture;
   final ApiService _apiService = ApiService();
   final TextEditingController _searchController = TextEditingController();
+  final FavoritesService _favoritesService = FavoritesService();
 
   int _currentPage = 1;
   int _totalPages = 1;
@@ -53,6 +55,7 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
   List<String> _selectedTags = [];
   String _sortBy = 'rating';
   String _sortOrder = 'desc';
+  Set<String> _favoriteProviderIds = {};
 
   List<Map<String, dynamic>> _getServiceCategories(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -84,6 +87,16 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
       _selectedCategory = widget.initialCategory!;
     }
 
+    _initFavoritesAndProviders();
+  }
+
+  Future<void> _initFavoritesAndProviders() async {
+    final ids = await _favoritesService.getFavoriteProviderIds();
+    if (mounted) {
+      setState(() {
+        _favoriteProviderIds = ids;
+      });
+    }
     _loadProviders();
   }
 
@@ -989,6 +1002,10 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                     .contains(_selectedLocation.toLowerCase()) ??
                 false));
 
+    final providerId = provider.id ?? '';
+    final isFavorite =
+        providerId.isNotEmpty && _favoriteProviderIds.contains(providerId);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -1022,8 +1039,50 @@ class _ProviderListScreenState extends State<ProviderListScreen> {
                             style: AppTheme.h3.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(
+                            isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                          ),
+                          color: AppTheme.danger,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () async {
+                            if (providerId.isEmpty) return;
+                            final updated = Set<String>.from(_favoriteProviderIds);
+                            final l10n = AppLocalizations.of(context)!;
+                            if (isFavorite) {
+                              updated.remove(providerId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.removedFromFavorites),
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            } else {
+                              updated.add(providerId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.addedToFavorites),
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                            await _favoritesService
+                                .saveFavoriteProviderIds(updated);
+                            if (!mounted) return;
+                            setState(() {
+                              _favoriteProviderIds = updated;
+                            });
+                          },
                         ),
                         const SizedBox(width: 8),
                         Flexible(

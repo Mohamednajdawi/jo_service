@@ -152,7 +152,7 @@ class _AdminBookingManagementScreenState extends State<AdminBookingManagementScr
 
   String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return 'N/A';
-    return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
+    return DateFormat('MMM d, yyyy HH:mm').format(dateTime);
   }
 
   String _getStatusColor(String status) {
