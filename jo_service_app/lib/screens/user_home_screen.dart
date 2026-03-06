@@ -30,6 +30,7 @@ class UserHomeScreen extends StatefulWidget {
 class _UserHomeScreenState extends State<UserHomeScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+  final GlobalKey<NavigatorState> _homeNavigatorKey = GlobalKey<NavigatorState>();
   
   final BookingService _bookingService = BookingService();
   
@@ -241,6 +242,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           },
           children: [
             Navigator(
+              key: _homeNavigatorKey,
               onGenerateRoute: _generateTabRoute,
               initialRoute: '/home',
             ),
@@ -252,7 +254,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               onGenerateRoute: _generateTabRoute,
               initialRoute: '/bookings',
             ),
-            const UserChatsScreen(),
+            Navigator(
+              onGenerateRoute: _generateTabRoute,
+              initialRoute: '/messages',
+            ),
             Navigator(
               onGenerateRoute: _generateTabRoute,
               initialRoute: '/profile',
@@ -272,6 +277,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return MaterialPageRoute(builder: (_) => const ProviderListScreen());
       case '/bookings':
         return MaterialPageRoute(builder: (_) => const UserBookingsScreen());
+      case '/messages':
+        return MaterialPageRoute(builder: (_) => const UserChatsScreen());
       case '/profile':
         return MaterialPageRoute(builder: (_) => const UserProfileScreen());
       case ProviderDetailScreen.routeName:
@@ -743,7 +750,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context, rootNavigator: false).pushNamed(
+        _homeNavigatorKey.currentState?.pushNamed(
           BookingDetailScreen.routeName,
           arguments: booking.id,
         );

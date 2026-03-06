@@ -12,6 +12,7 @@ import '../models/booking_model.dart';
 import '../services/auth_service.dart';
 import '../services/booking_service.dart';
 import '../services/api_service.dart';
+import '../services/saved_locations_service.dart';
 import '../widgets/location_picker.dart';
 
 class CreateBookingScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class CreateBookingScreen extends StatefulWidget {
 
 class _CreateBookingScreenState extends State<CreateBookingScreen> {
   final BookingService _bookingService = BookingService();
+  final SavedLocationsService _locationsService = SavedLocationsService();
   final _formKey = GlobalKey<FormState>();
 
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
@@ -35,10 +37,22 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
   bool _isLoading = false;
   double? _selectedLatitude;
   double? _selectedLongitude;
-  
+  List<SavedLocation> _savedLocations = [];
+
   // Photo attachment functionality
   final ImagePicker _imagePicker = ImagePicker();
   List<XFile> _selectedImages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocations();
+  }
+
+  Future<void> _loadSavedLocations() async {
+    final locations = await _locationsService.getLocations();
+    if (mounted) setState(() => _savedLocations = locations);
+  }
 
   @override
   void dispose() {
@@ -146,6 +160,52 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
         _selectedTime = picked;
       });
     }
+  }
+
+  // Show saved locations and let user pick one
+  Future<void> _showSavedLocations() async {
+    await _loadSavedLocations();
+    if (!mounted) return;
+    if (_savedLocations.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No saved locations. Add them in Profile → Saved locations.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Choose a saved location',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ..._savedLocations.map((loc) => ListTile(
+              leading: const Icon(Icons.place_outlined),
+              title: Text(loc.label),
+              subtitle: Text(loc.address),
+              onTap: () {
+                setState(() {
+                  _locationController.text = loc.address;
+                });
+                Navigator.pop(context);
+              },
+            )),
+          ],
+        ),
+      ),
+    );
   }
 
   // Function to pick location
@@ -491,6 +551,19 @@ class _CreateBookingScreenState extends State<CreateBookingScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: _showSavedLocations,
+                      icon: const Icon(Icons.location_on_outlined, size: 20),
+                      label: Text(
+                        _savedLocations.isEmpty
+                            ? 'Saved locations'
+                            : 'Use saved location (${_savedLocations.length})',
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
 
                     const SizedBox(height: 24),

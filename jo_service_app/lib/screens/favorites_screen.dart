@@ -189,7 +189,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(
+          Navigator.of(context, rootNavigator: false).pushNamed(
             ProviderDetailScreen.routeName,
             arguments: provider.id ?? '',
           );

@@ -90,7 +90,7 @@ const BookingController = {
             const options = {
                 page: parseInt(page, 10),
                 limit: parseInt(limit, 10),
-                sort: { serviceDateTime: -1 }, // Sort by newest first
+                sort: { updatedAt: -1 }, // Sort by last modified first
                 populate: { 
                     path: 'provider', 
                     select: 'fullName email serviceType profilePictureUrl averageRating' 
@@ -173,7 +173,7 @@ const BookingController = {
             const options = {
                 page: parseInt(page, 10),
                 limit: parseInt(limit, 10),
-                sort: { serviceDateTime: -1 },
+                sort: { updatedAt: -1 },
                 populate: { path: 'user', select: 'fullName email profilePictureUrl' } // Populate user details
             };
 
@@ -447,7 +447,7 @@ const BookingController = {
             const bookings = await Booking.find({})
                 .populate('user', 'fullName email profilePictureUrl')
                 .populate('provider', 'fullName email serviceType profilePictureUrl')
-                .sort({ serviceDateTime: -1 });
+                .sort({ updatedAt: -1 });
             
             
             if (bookings.length > 0) {
@@ -478,10 +478,11 @@ const BookingController = {
                 .populate('provider', 'fullName email serviceType profilePictureUrl');
             
             // Filter manually after populating to ensure correct string comparison
-            const filteredBookings = bookings.filter(booking => 
-                booking.user && booking.user._id && booking.user._id.toString() === userId
-            );
-            
+            const filteredBookings = bookings
+                .filter(booking => 
+                    booking.user && booking.user._id && booking.user._id.toString() === userId
+                )
+                .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
             
             if (filteredBookings.length > 0) {
             }
@@ -515,7 +516,7 @@ const BookingController = {
             const bookings = await Booking.find(query)
                 .populate('user', 'fullName email profilePictureUrl')
                 .populate('provider')
-                .sort({ serviceDateTime: -1 });
+                .sort({ updatedAt: -1 });
             
             
             if (bookings.length > 0) {

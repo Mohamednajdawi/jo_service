@@ -678,10 +678,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.bookingDetails),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
         actions: [
           if (_booking != null &&
               _userType == 'user' &&

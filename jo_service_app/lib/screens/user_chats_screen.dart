@@ -391,6 +391,7 @@ class _UserChatsScreenState extends State<UserChatsScreen> {
       appBar: AppBar(
         title: Text(l10n.myChats),
         elevation: 1,
+        automaticallyImplyLeading: false,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
