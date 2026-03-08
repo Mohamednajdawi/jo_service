@@ -23,6 +23,8 @@ jobs:
     name: Deploy Backend to Railway
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     
     steps:
       - name: Checkout code
@@ -34,34 +36,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       
       - name: Install Railway CLI
-        run: |
-          npm install -g @railway/cli
-      
-      - name: Login to Railway
-        run: railway login --token ${{ secrets.RAILWAY_TOKEN }} --quiet
-      
-      - name: Get Railway App Name
-        id: vars
-        run: |
-          echo "app_name=jo-service-backend" >> $GITHUB_ENV
+        run: npm install -g @railway/cli
       
       - name: Deploy Backend
         run: |
           cd server
-          railway deploy --environment production --token ${{ secrets.RAILWAY_TOKEN }}
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-          APP_URL: ${{ secrets.APP_URL }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+          railway up --environment production --ci
       
       - name: Post Deployment Health Check
         run: |
