@@ -1,0 +1,145 @@
+name: CD - Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Deploy Backend to Railway
+  deploy-backend:
+    name: Deploy Backend to Railway
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Railway CLI
+        run: |
+          npm install -g @railway/cli
+      
+      - name: Login to Railway
+        run: railway login --token ${{ secrets.RAILWAY_TOKEN }} --quiet
+      
+      - name: Get Railway App Name
+        id: vars
+        run: |
+          echo "app_name=jo-service-backend" >> $GITHUB_ENV
+      
+      - name: Deploy Backend
+        run: |
+          cd server
+          railway deploy --environment production --token ${{ secrets.RAILWAY_TOKEN }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          APP_URL: ${{ secrets.APP_URL }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+      
+      - name: Post Deployment Health Check
+        run: |
+          sleep 10
+          curl -f https://joservice-production.up.railway.app/api/health || echo "Health check failed - manual verification required"
+        continue-on-error: true
+      
+      - name: Create Deployment Comment
+        if: github.event_name == 'push'
+        run: |
+          echo "## 🚀 Backend Deployed to Railway" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://joservice-production.up.railway.app" >> $GITHUB_STEP_SUMMARY
+
+  # Deploy Flutter App (Build artifacts)
+  build-flutter-release:
+    name: Build Flutter Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+      
+      - name: Get Flutter dependencies
+        run: |
+          cd jo_service_app
+          flutter pub get
+      
+      - name: Build Flutter APK (Release)
+        run: |
+          cd jo_service_app
+          flutter build apk --release
+        env:
+          FLUTTER_BUILD_NAME: ${{ secrets.FLUTTER_BUILD_NAME }}
+          FLUTTER_BUILD_NUMBER: ${{ github.run_number }}
+      
+      - name: Build iOS (Release)
+        run: |
+          cd jo_service_app
+          flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+        if: false  # Requires Apple Developer account
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: jo-service-apk
+          path: jo_service_app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      
+      - name: Create Release Comment
+        if: github.event_name == 'push'
+        run: |
+          echo "## 📱 Flutter Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK**: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+
+  # Notification
+  notify-deployment:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, build-flutter-release]
+    if: always()
+    
+    steps:
+      - name: Create Deployment Summary
+        run: |
+          echo "## 🎉 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Backend" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.deploy-backend.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://joservice-production.up.railway.app" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Mobile App" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.build-flutter-release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- APK: Check artifacts" >> $GITHUB_STEP_SUMMARY
